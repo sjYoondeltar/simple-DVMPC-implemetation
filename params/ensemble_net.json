@@ -1,0 +1,51 @@
+  
+{
+	"ensemble_value_net_params":
+	{
+		"learning_process":
+		{
+			"RENDER" : false,
+			"LOAD" : false,
+			"EXPLORE" : true,
+			"USE_TIME" : false,
+			"train_episodes" : 250,
+			"load_model" : "value_net_029",
+			"save_dir" : "ensemble_value_net",
+			"length_episode_history" : 5,
+			"threshold_success_rate" : 0.9
+		},
+		"environment":
+		{
+			"x_init" : [-10.0, 2.0, 0],
+			"target" : [0, -2],
+			"coef_dis" : 0.01,
+			"coef_angle" : 0.0,
+			"collision_panalty" : -1,
+			"goal_reward" : 0.5,
+			"continue_after_collision" : false
+		},
+		"control":
+		{
+			"beta" : 1.0,
+			"cost_gamma" : 1,
+			"exploration_step" : 1500,
+			"minibatch_size" : 256,
+			"target_coef" : 0,
+			"N" : 10,
+			"G" : 20
+		},
+		"visualization":
+		{
+			"USE_TIME" : false,
+			"load_model" : "value_net_045",
+			"save_dir" : "ensemble_value_net",
+			"x_min" : -12,
+			"x_max" : 12,
+			"x_resolution" : 0.1,
+			"y_min" : -8,
+			"y_max" : 8,
+			"y_resolution" : 0.1
+		}
+	}
+}
+
