@@ -5,12 +5,11 @@ sys.path.append(".")
 import numpy as np
 import cv2
 from vehicle_env.vehicle_model import UNICAR
-from vehicle_env.sensor_model import InRANGEVehicleDetector
 
 class NAVI_ENV(object):
 
     def __init__(self, dT=0.05, x_init=[0.0, 0.0, 0], target_fix=None, u_min=[0, -np.pi/6], u_max=[2, np.pi/6],
-                t_max=200, level=1, sensor_max=10, n_sensor=7, range_sensor=[-np.pi/2, np.pi/2],
+                t_max=200, level=1,
                 reward_type='cart', obs_list=[[5.0, 5.0, 10.0, 2.0], [5.0, -5.0, 10.0, 2.0]],
                 coef_dis=0.2, coef_angle=1.2, dis_collision=1.0, terminal_cond=2.0, collision_panalty=-10, goal_reward=1,
                 continue_after_collision=True):
@@ -385,26 +384,11 @@ if __name__ == '__main__':
     #             [12.0, -8.0, 16.0, 8.0]]
 
     wall_list = None
-
-    # env = NAVI_ENV(x_init=[-17.0, 0.0, 0.0], target_fix=None, reward_type='polar', t_max=500, obs_list=wall_list)
+    
     env = NAVI_ENV(x_init=[0.0, 0, 0.0], level=2, reward_type='polar', t_max=500, obs_list=wall_list)
 
 
     for eps in range(3):
-
-        # maze_gen.make_maze()
-
-        # obs_list = maze_gen.get_obstacles()
-
-        # x_init = maze_gen.get_init()
-
-        # tar = maze_gen.get_target()
-
-        # env.renew_obs_list(obs_list)
-
-        # env.renew_init(x_init)
-
-        # env.renew_target(tar)
     
         print(eps)
 
