@@ -26,7 +26,7 @@
 		},
 		"control":
 		{
-			"beta" : 1.0,
+			"beta" : -0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
