@@ -39,6 +39,7 @@ python3 examples/visualize_value_net.py
 ```
  - the start point : (-10, 2)
  - the end point : ( 0, -2)
+
 ![](img/value_net_026.png)
 
 
