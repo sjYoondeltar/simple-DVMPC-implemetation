@@ -39,6 +39,7 @@ python3 examples/test_deep_value_mpc.py
 - Visualize
 ```
 python3 examples/visualize_value_net.py
+python3 examples/visualize_ensemble_value_net.py
 ```
   - the start point : (-10, 2)
   - the end point : ( 0, -2)
