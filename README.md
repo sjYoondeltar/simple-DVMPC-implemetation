@@ -10,6 +10,9 @@ This is a unofficial implementation of Deep Value Model Predictive Control (MPC)
 ---
 - 2d navigation environment
 
+![](img/screenshot.png)
+
+
 ## Usage
 ---
 - Train
