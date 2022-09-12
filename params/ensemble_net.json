@@ -26,7 +26,7 @@
 		},
 		"control":
 		{
-			"beta" : -0.0,
+			"beta" : 1.0,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
@@ -37,7 +37,7 @@
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_045",
+			"load_model" : "value_net_207",
 			"save_dir" : "ensemble_value_net",
 			"x_min" : -12,
 			"x_max" : 12,
