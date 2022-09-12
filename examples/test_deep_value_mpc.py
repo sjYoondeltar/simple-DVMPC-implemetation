@@ -1,0 +1,213 @@
+import sys
+sys.path.append(".")
+
+import time
+import numpy as np
+import torch
+import json
+import argparse
+import random
+from pathlib import Path
+from vehicle_env.navi_maze_env_car import NAVI_ENV
+from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_redq
+
+
+def set_params():
+    
+    if ENSEMBLE:
+        with Path('params/ensemble_net.json').open('r') as f:
+            params = json.load(f)["ensemble_value_net_params"]
+    else:
+        with Path('params/value_net.json').open('r') as f:
+            params = json.load(f)["value_net_params"]
+    
+    return params
+    
+    
+def set_env(params):
+    with Path('params/ensemble_net.json').open('r') as f:
+        params = json.load(f)["ensemble_value_net_params"]
+    
+    obs_list =[
+        [0.0, 2.0, 4.0, 4.0],
+        [9.0, -2.0, 4.0, 4.0],
+        [-9.0, -2.0, 4.0, 4.0],
+        [-16.0, 0.0, 10.0, 8.0],
+        [16.0, 0.0, 10.0, 8.0],
+        [0.0, 12.0, 40.0, 16.0],
+        [0.0, -12.0, 40.0, 16.0]
+    ]
+    
+    obs_pts = np.array([[
+        [obs[0]-obs[2]/2, obs[1]-obs[3]/2],
+        [obs[0]+obs[2]/2, obs[1]-obs[3]/2],
+        [obs[0]+obs[2]/2, obs[1]+obs[3]/2],
+        [obs[0]-obs[2]/2, obs[1]+obs[3]/2],
+        ] for obs in obs_list])
+    
+    train_episodes = params["learning_process"]["train_episodes"]
+    
+    env = NAVI_ENV(
+        x_init=params["environment"]["x_init"],
+        dT=0.1,
+        u_min=[0, -np.pi/4],
+        u_max=[2, np.pi/4],
+        reward_type='polar',
+        target_fix=params["environment"]["target"],
+        level=2, t_max=500, obs_list=obs_list,
+        coef_dis=params["environment"]["coef_dis"],
+        coef_angle=params["environment"]["coef_angle"],
+        terminal_cond=1,
+        collision_panalty=params["environment"]["collision_panalty"],
+        goal_reward=params["environment"]["goal_reward"],
+        continue_after_collision=params["environment"]["continue_after_collision"]
+    )
+    
+    return env, train_episodes, obs_pts
+
+
+def set_ctrl():
+    
+    if ENSEMBLE:
+    
+        rsmpc = CEMMPC_uni_redq(
+            N=30,
+            K=10,
+            dt=0.1,
+            iter=3,
+            top_k=3,
+            u_min=[1.0, -np.pi/4],
+            u_max=[2.0, np.pi/4],
+            du_max=[1, np.pi/8],
+            cost_gamma=params["control"]["cost_gamma"],
+            exploration_step=params["control"]["exploration_step"],
+            minibatch_size=params["control"]["minibatch_size"],
+            buffer_size=2**14,
+            load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["N"])],
+            use_time=USE_TIME,
+            Ne=params["control"]["N"],
+            G=params["control"]["G"],
+            beta_cost=params["control"]["beta"],
+            target_coef=params["control"]["target_coef"]
+        )
+        
+    else:
+        
+        rsmpc = CEMMPC_uni_neural(
+            N=30,
+            K=10,
+            dt=0.1,
+            iter=3,
+            top_k=3,
+            u_min=[1.0, -np.pi/4],
+            u_max=[2.0, np.pi/4],
+            du_max=[1/5, np.pi/8],
+            cost_gamma=params["control"]["cost_gamma"],
+            exploration_step=params["control"]["exploration_step"],
+            minibatch_size=params["control"]["minibatch_size"],
+            buffer_size=2**16,
+            load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
+            use_time=USE_TIME,
+            target_coef=params["control"]["target_coef"]
+        )
+    
+    rsmpc.build_value_net()
+    
+    if LOAD:
+        rsmpc.load_value_net()
+        
+    return rsmpc
+
+def test_process():
+    
+    reach_history = []
+
+    for eps in range(train_episodes):
+        
+        done = False
+
+        x, target = env.reset()
+        
+        tc = 0.0
+        
+        u_ex = 0.0
+        
+        no_collision = True
+
+        while not env.t_max_reach and not done :
+
+            u_w, x_pred = rsmpc.cem_optimize(x, target, obs_pts, tc)
+
+            env.push_traj(np.transpose(x_pred, (2, 0, 1)))
+            
+            u = np.array(u_w[0, :]).reshape([-1, 1])
+
+            xn, r, done = env.step(u)
+            
+            if RENDER:
+                env.render()
+            
+            if env.reach:
+                print(f"reach at {env.t}\n")
+                break
+
+            x = xn
+            tc = tc + env.dT
+            u_ex = u[1][0]
+            
+            if no_collision and (env.wall_contact or env.obs_contact):
+                no_collision = False
+            
+        if no_collision:
+            print(f"{eps:3d}th episode finished at {env.t} steps with no collision and stopped {env.dist:.4f} from targets\n")
+        else:
+            print(f"{eps:3d}th episode finished at {env.t} steps with collisions and stopped {env.dist:.4f} from targets\n")
+            
+        # reach_history.append(float(env.reach))
+        reach_history.append(float(no_collision))
+        
+        if len(reach_history) > params["learning_process"]["length_episode_history"]:
+            reach_history.pop(0)
+        else:
+            pass
+        
+        if env.reach and np.mean(reach_history) > params["learning_process"]["threshold_success_rate"] and len(reach_history)==params["learning_process"]["length_episode_history"]:
+            print(f"exiting the eps after reaching\n")
+            rsmpc.save_value_net(f"value_net_{eps:03d}.pth")
+            break
+        else:
+            pass
+
+
+if __name__ == '__main__':
+    
+    parser = argparse.ArgumentParser(description='Reach-Avoid')
+    parser.add_argument('--ensemble', action='store_true', help='use ensemble')
+    parser.add_argument('--seed', type=int, default=1234,
+                        help='the seed number of numpy and torch (default: 1234)')
+    parser.add_argument('--render', action='store_true', default=False,
+                        help='render the environment on training or inference')
+    
+    args = parser.parse_args()
+    
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
+    
+    ENSEMBLE=args.ensemble
+    
+    params = set_params()
+    
+    RENDER = True
+    LOAD = True
+    USE_TIME = params["learning_process"]["USE_TIME"]
+    
+    env, train_episodes, obs_pts = set_env(params)
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    rsmpc = set_ctrl()
+    
+    test_process()
+    
+    
