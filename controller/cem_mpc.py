@@ -34,47 +34,36 @@ class CEMMPC_uni_neural(object):
 
     def __init__(
         self,
-        N=15,
-        K=10,
-        dt=0.1,
-        top_k=3,
-        iter=3,
-        lr=1e-3,
-        u_min=[1.4, -np.pi/3],
-        u_max=[1.4, np.pi/3],
-        du_max=[1, np.pi/3],
-        tau=0.01,
-        cost_gamma=1.0,
-        device=torch.device('cuda'),
-        exploration_step=1000,
-        minibatch_size=256,
-        buffer_size=2**16,
-        load_dir=None,
-        save_dir='value_net',
+        params,
+        load_dir,
         use_time=True,
-        target_coef=0.01,
-        G=1):
-        
-        self.N = N
-        self.K = K
+        lr=1e-3,
+        tau=0.01,
+        device=torch.device('cuda'),
+        ):
+                
+        self.N = params["control"]["N"]
+        self.K = params["control"]["K"]
 
-        self.dt = dt
+        self.dt = params["control"]["dt"]
         self.x_dim = 3
         self.u_dim = 2
         self.u_ex = np.array([0.0, 0.0]).reshape([self.u_dim, -1])
 
-        self.top_k = top_k
-        self.iter = iter
+        self.top_k = params["control"]["top_k"]
+        self.iter = params["control"]["iter"]
         
         self.lr = lr
 
         self.gamma = 0.99
-        self.cost_gamma = cost_gamma
+        self.cost_gamma = params["control"]["cost_gamma"]
 
-        self.u_min= np.array(u_min)
-        self.u_max= np.array(u_max)
-        
-        self.du_max = np.array(du_max)
+        self.u_min= np.array(params["control"]["u_min"])
+        self.u_min[1] = self.u_min[1]*np.pi
+        self.u_max= np.array(params["control"]["u_max"])
+        self.u_max[1] = self.u_max[1]*np.pi
+        self.du_max = np.array(params["control"]["du_max"])
+        self.du_max[1] = self.du_max[1]*np.pi
 
         self.du_mu = np.zeros((self.N, self.u_dim))
         self.du_std = np.ones((self.N, self.u_dim))
@@ -85,28 +74,25 @@ class CEMMPC_uni_neural(object):
         
         self.n_step = 1
         
-        self.buffer = ExperienceReplayMemory(buffer_size=buffer_size)
+        self.buffer = ExperienceReplayMemory(buffer_size=params["control"]["buffer_size"])
         
         self.device = device
         
         self.use_time = use_time
-
-        self.dis_collision = 1.2
-        self.collsion_cost = 200
-        self.coef_col = 400
-        self.coef_target_cost = target_coef
         
-        self.G=G
+        self.coef_target_cost = params["control"]["target_coef"]
+        
+        self.G=params["control"]["G"]
         
         self.sample_enough = False
-        self.exploration_step = exploration_step
-        self.minibatch_size = minibatch_size
+        self.exploration_step = params["control"]["exploration_step"]
+        self.minibatch_size = params["control"]["minibatch_size"]
         
         self.tau = tau
         
         self.eps = 1
         
-        self.save_dir = Path(save_dir)
+        self.save_dir = Path(params["learning_process"]["save_dir"])
         self.load_dir = load_dir
         
         
@@ -284,47 +270,6 @@ class CEMMPC_uni_neural(object):
         self.reset_mu_std()
 
         return self.u_seq[:, :, np.argsort(err_pred)[:self.top_k]].mean(axis=2), self.x_predict[:, :, np.argsort(err_pred)[:self.top_k]]
-
-
-    def check_contact(self, x_new, obs_pts):
-
-        if obs_pts is not None:
-
-            for ob_idx in range(obs_pts.shape[0]):
-
-                obs_centor = (obs_pts[ob_idx, 0, :] + obs_pts[ob_idx, 2, :])/2
-
-                obs_wh = np.abs(obs_pts[ob_idx, 0, :] - obs_pts[ob_idx, 2, :])
-
-                obs_contact = self.check_collision_rect_obs(x_new[0][:], x_new[1][:], obs_centor[0], obs_centor[1], obs_wh[0], obs_wh[1])
-
-                if obs_contact:
-
-                    break
-
-        else:
-
-            obs_contact = False
-
-        return obs_contact
-    
-    
-    def check_collision_rect_obs(self, x, y, cx, cy, w, h):
-            
-        if  x > cx - w/2 - self.dis_collision and x < cx + w/2 + self.dis_collision:
-
-            if y > cy - h/2 - self.dis_collision and y < cy + h/2 + self.dis_collision:
-
-                collision = True
-
-            else:
-                
-                collision = False
-
-        else:
-            collision = False
-
-        return collision
     
     
     def push_samples(self, transition):
@@ -479,54 +424,25 @@ class CEMMPC_uni_redq(CEMMPC_uni_neural):
 
     def __init__(
         self,
-        N=15,
-        K=10,
-        dt=0.1,
-        top_k=3,
-        iter=3,
-        lr=1e-3,
-        u_min=[1.4, -np.pi/3],
-        u_max=[1.4, np.pi/3],
-        du_max=[1, np.pi/3],
-        tau=0.01,
-        cost_gamma=1,
-        device=torch.device('cuda'),
-        exploration_step=1000,
-        minibatch_size=256,
-        buffer_size=2**16,
-        load_dir=None,
-        save_dir='ensemble_value_net',
+        params,
+        load_dir,
         use_time=True,
-        target_coef=0.01,
-        Ne=10,
-        G=20,
-        beta_cost=1):
+        lr=1e-3,
+        tau=0.01,
+        device=torch.device('cuda'),
+        ):
         
         super().__init__(
-            N,
-            K,
-            dt,
-            top_k,
-            iter,
-            lr,
-            u_min,
-            u_max,
-            du_max,
-            tau,
-            cost_gamma,
-            device,
-            exploration_step,
-            minibatch_size,
-            buffer_size,
+            params,
             load_dir,
-            save_dir,
             use_time,
-            target_coef,
-            G=G
+            lr,
+            tau,
+            device
         )
         
-        self.Ne = Ne
-        self.beta_cost = beta_cost
+        self.Ne = params["control"]["Ne"]
+        self.beta_cost = params["control"]["beta"]
                 
     def build_value_net(self):
         

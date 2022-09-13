@@ -71,45 +71,17 @@ def set_ctrl():
     if ENSEMBLE:
     
         rsmpc = CEMMPC_uni_redq(
-            N=30,
-            K=10,
-            dt=0.1,
-            iter=3,
-            top_k=3,
-            u_min=[1.0, -np.pi/4],
-            u_max=[1.0, np.pi/4],
-            du_max=[1, np.pi/8],
-            cost_gamma=params["control"]["cost_gamma"],
-            exploration_step=params["control"]["exploration_step"],
-            minibatch_size=params["control"]["minibatch_size"],
-            buffer_size=2**14,
-            load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["N"])],
+            params=params,
+            load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
             use_time=USE_TIME,
-            Ne=params["control"]["N"],
-            G=params["control"]["G"],
-            beta_cost=params["control"]["beta"],
-            target_coef=params["control"]["target_coef"]
         )
         
     else:
         
         rsmpc = CEMMPC_uni_neural(
-            N=30,
-            K=10,
-            dt=0.1,
-            iter=3,
-            top_k=3,
-            u_min=[1.0, -np.pi/4],
-            u_max=[1.0, np.pi/4],
-            du_max=[1/5, np.pi/8],
-            cost_gamma=params["control"]["cost_gamma"],
-            exploration_step=params["control"]["exploration_step"],
-            minibatch_size=params["control"]["minibatch_size"],
-            buffer_size=2**14,
+            params=params,
             load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
             use_time=USE_TIME,
-            target_coef=params["control"]["target_coef"],
-            G=params["control"]["G"],
         )
     
     rsmpc.build_value_net()
