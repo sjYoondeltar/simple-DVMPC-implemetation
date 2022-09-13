@@ -74,6 +74,7 @@ def set_ctrl():
             params=params,
             load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
             use_time=USE_TIME,
+            device=device,
         )
         
     else:
@@ -82,6 +83,7 @@ def set_ctrl():
             params=params,
             load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
             use_time=USE_TIME,
+            device=device,
         )
     
     rsmpc.build_value_net()
