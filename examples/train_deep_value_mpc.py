@@ -128,10 +128,7 @@ def train_process():
             
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
-            if ENSEMBLE:
-                rsmpc.train()
-            else:
-                rsmpc.train(iter=20)
+            rsmpc.train()
             
             if RENDER:
                 env.render()

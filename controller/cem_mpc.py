@@ -291,11 +291,11 @@ class CEMMPC_uni_neural(object):
             self.sample_enough = True if len(self.buffer.main_buffer.memory) > self.exploration_step else False
     
     
-    def train(self, iter):
+    def train(self):
         
         if self.sample_enough:
             
-            for _ in range(iter):
+            for _ in range(self.G):
         
                 criterion = torch.nn.MSELoss()
                 
