@@ -52,7 +52,8 @@ class CEMMPC_uni_neural(object):
         load_dir=None,
         save_dir='value_net',
         use_time=True,
-        target_coef=0.01,):
+        target_coef=0.01,
+        G=1):
         
         self.N = N
         self.K = K
@@ -94,8 +95,8 @@ class CEMMPC_uni_neural(object):
         self.collsion_cost = 200
         self.coef_col = 400
         self.coef_target_cost = target_coef
-
-        self.obs_coef = 20
+        
+        self.G=G
         
         self.sample_enough = False
         self.exploration_step = exploration_step
@@ -199,23 +200,6 @@ class CEMMPC_uni_neural(object):
         self.du_std = self.du_max*np.ones((self.N, self.u_dim))
         self.du_std[:, 0] = 0.5*self.du_max[0]
         self.du_std[:, 1] = 0.5*self.du_max[1]
-
-
-    def calc_obs_cost(self, x, obs_pts):
-
-        cost = 0
-
-        for ob_idx in range(obs_pts.shape[0]):
-
-            obs_centor = (obs_pts[ob_idx, 0, :] + obs_pts[ob_idx, 2, :])/2
-
-            dist_obs = np.linalg.norm(x[:2, 0]-obs_centor)
-
-            cost += np.exp(-dist_obs**2/self.obs_coef)
-
-        cost = cost / obs_pts.shape[0]
-
-        return cost
 
         
     def rs_pred_cost(self, x, u_seq, target, t):
@@ -537,11 +521,11 @@ class CEMMPC_uni_redq(CEMMPC_uni_neural):
             load_dir,
             save_dir,
             use_time,
-            target_coef
+            target_coef,
+            G=G
         )
         
         self.Ne = Ne
-        self.G = G
         self.beta_cost = beta_cost
                 
     def build_value_net(self):

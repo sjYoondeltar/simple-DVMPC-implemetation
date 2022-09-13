@@ -108,7 +108,8 @@ def set_ctrl():
             buffer_size=2**14,
             load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
             use_time=USE_TIME,
-            target_coef=params["control"]["target_coef"]
+            target_coef=params["control"]["target_coef"],
+            G=params["control"]["G"],
         )
     
     rsmpc.build_value_net()

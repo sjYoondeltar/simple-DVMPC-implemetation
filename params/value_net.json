@@ -29,7 +29,8 @@
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0
+			"target_coef" : 0,
+			"G" : 20
 		},
 		"visualization":
 		{
