@@ -59,11 +59,11 @@ class CEMMPC_uni_neural(object):
         self.cost_gamma = params["control"]["cost_gamma"]
 
         self.u_min= np.array(params["control"]["u_min"])
-        self.u_min[1] = self.u_min[1]*np.pi
+        self.u_min[1] = self.u_min[1]*np.pi/180
         self.u_max= np.array(params["control"]["u_max"])
-        self.u_max[1] = self.u_max[1]*np.pi
+        self.u_max[1] = self.u_max[1]*np.pi/180
         self.du_max = np.array(params["control"]["du_max"])
-        self.du_max[1] = self.du_max[1]*np.pi
+        self.du_max[1] = self.du_max[1]*np.pi/180
 
         self.du_mu = np.zeros((self.N, self.u_dim))
         self.du_std = np.ones((self.N, self.u_dim))
