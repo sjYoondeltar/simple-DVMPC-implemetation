@@ -111,7 +111,7 @@ class CEMMPC_uni_neural(object):
         self.cost_func_target.load_state_dict(self.cost_func.state_dict())
         
         self.critic_optimizer = optim.Adam(
-            list(self.cost_func.parameters()), lr=self.lr, eps=1e-2)
+            list(self.cost_func.parameters()), lr=self.lr, eps=1e-4)
         
     
     def soft_target_update(self, critic, target_critic):
