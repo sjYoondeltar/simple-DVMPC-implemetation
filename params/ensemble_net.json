@@ -35,7 +35,7 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 27.5],
 			"buffer_size" : 16384,
-			"beta" : -1.5,
+			"beta" : 0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
