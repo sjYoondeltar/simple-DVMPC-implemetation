@@ -12,6 +12,16 @@ from vehicle_env.navi_maze_env_car import NAVI_ENV
 from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_redq
 
 
+def set_seed(seed):
+    
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
 def set_params():
     
     if ENSEMBLE:
@@ -163,9 +173,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    torch.manual_seed(args.seed)
-    np.random.seed(args.seed)
-    random.seed(args.seed)
+    set_seed(args.seed)
     
     ENSEMBLE=args.ensemble
     
