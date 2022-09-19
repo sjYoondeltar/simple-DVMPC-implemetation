@@ -17,7 +17,7 @@
 		"environment":
 		{
 			"x_init" : [-10.0, 2.0, 0],
-			"target" : [0.0, -2],
+			"target" : [2.0, -2],
 			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
@@ -38,7 +38,7 @@
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0.01,
+			"target_coef" : 0.0,
 			"G" : 1
 		},
 		"visualization":

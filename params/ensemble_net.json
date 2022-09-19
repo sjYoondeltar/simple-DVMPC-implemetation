@@ -8,7 +8,7 @@
 			"LOAD" : false,
 			"EXPLORE" : true,
 			"USE_TIME" : false,
-			"train_episodes" : 250,
+			"train_episodes" : 100,
 			"load_model" : "value_net_036",
 			"save_dir" : "ensemble_value_net",
 			"length_episode_history" : 5,
@@ -17,11 +17,11 @@
 		"environment":
 		{
 			"x_init" : [-10.0, 2.0, 0],
-			"target" : [10.0, 2],
+			"target" : [2.0, -2],
 			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
-			"goal_reward" : 0.5,
+			"goal_reward" : 1,
 			"continue_after_collision" : false
 		},
 		"control":
@@ -35,11 +35,11 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 27.5],
 			"buffer_size" : 16384,
-			"beta" : 0.5,
+			"beta" : -0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0,
+			"target_coef" : 0.0,
 			"Ne" : 10,
 			"G" : 20
 		},
