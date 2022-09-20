@@ -17,8 +17,8 @@
 		"environment":
 		{
 			"x_init" : [-10.0, 2.0, 0],
-			"target" : [2.0, -2],
-			"coef_dis" : 0.01,
+			"target" : [0.0, -2],
+			"coef_dis" : 0.1,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
 			"goal_reward" : 0.5,
