@@ -18,8 +18,8 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    # torch.backends.cudnn.deterministic = True
+    # torch.backends.cudnn.benchmark = False
 
 
 def set_params():
@@ -74,7 +74,7 @@ def set_env(params):
     return env, train_episodes, obs_pts
 
 
-def set_ctrl():
+def set_ctrl(params):
     
     if ENSEMBLE:
     
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    rsmpc = set_ctrl()
+    rsmpc = set_ctrl(params)
     
     train_process()
     
