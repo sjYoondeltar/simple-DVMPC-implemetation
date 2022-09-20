@@ -35,8 +35,6 @@ def set_params():
     
     
 def set_env(params):
-    with Path('params/ensemble_net.json').open('r') as f:
-        params = json.load(f)["ensemble_value_net_params"]
     
     obs_list =[
         [0.0, 2.0, 4.0, 4.0],
@@ -76,7 +74,7 @@ def set_env(params):
     return env, train_episodes, obs_pts
 
 
-def set_ctrl():
+def set_ctrl(params):
     
     if ENSEMBLE:
     
