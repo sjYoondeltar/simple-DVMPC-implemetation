@@ -8,7 +8,7 @@
 			"LOAD" : false,
 			"EXPLORE" : true,
 			"USE_TIME" : false,
-			"train_episodes" : 250,
+			"train_episodes" : 100,
 			"load_model" : "value_net_026",
 			"save_dir" : "value_net",
 			"length_episode_history" : 5,
@@ -33,18 +33,18 @@
 			"top_k" : 3,
 			"u_min" : [1.0, -45],
 			"u_max" : [1.0, 45],
-			"du_max" : [1, 27.5],
+			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
 			"target_coef" : 0.0,
-			"G" : 1
+			"G" : 20
 		},
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_026",
+			"load_model" : "value_net_025",
 			"save_dir" : "value_net",
 			"x_min" : -12,
 			"x_max" : 12,
