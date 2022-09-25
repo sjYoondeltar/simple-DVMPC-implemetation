@@ -21,7 +21,7 @@
 			"coef_dis" : 0.1,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
-			"goal_reward" : 1,
+			"goal_reward" : 0.5,
 			"continue_after_collision" : false
 		},
 		"control":
