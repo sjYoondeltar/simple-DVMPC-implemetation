@@ -642,6 +642,8 @@ class CEMMPC_uni_redq(CEMMPC_uni_neural):
                         
                     loss = loss + criterion(value_trainable, target.detach())
                     
+                loss = loss / self.Ne
+                
                 self.critic_optimizer.zero_grad()
                 loss.backward()
                 self.critic_optimizer.step()
