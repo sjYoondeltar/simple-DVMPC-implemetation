@@ -49,4 +49,8 @@ python3 examples/visualize_ensemble_value_net.py
 
 ## Reference
 - [2D vehicle Env](https://github.com/MorvanZhou/Reinforcement-learning-with-tensorflow)
-- [Deep Value MPC](https://arxiv.org/abs/1910.03358)
+- Deep Value MPC : 
+  - <https://arxiv.org/abs/1910.03358>
+  - <https://arxiv.org/abs/2003.03200>
+- ensemble method : 
+  - based on [REDQ pytorch implementation](https://github.com/BY571/Randomized-Ensembled-Double-Q-learning-REDQ-)
