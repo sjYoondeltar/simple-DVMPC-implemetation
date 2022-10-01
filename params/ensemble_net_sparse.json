@@ -21,7 +21,7 @@
 			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
-			"reward_type" : "polar",
+			"reward_type" : "sparse",
 			"goal_reward" : 2,
 			"continue_after_collision" : false
 		},
@@ -40,7 +40,7 @@
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0.0,
+			"target_coef" : 0.01,
 			"Ne" : 10,
 			"G" : 20
 		},

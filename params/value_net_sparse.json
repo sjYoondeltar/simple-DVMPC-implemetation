@@ -1,6 +1,6 @@
   
 {
-	"ensemble_value_net_params":
+	"value_net_params":
 	{
 		"learning_process":
 		{
@@ -9,8 +9,8 @@
 			"EXPLORE" : true,
 			"USE_TIME" : false,
 			"train_episodes" : 100,
-			"load_model" : "value_net_036",
-			"save_dir" : "ensemble_value_net",
+			"load_model" : "value_net_026",
+			"save_dir" : "value_net",
 			"length_episode_history" : 5,
 			"threshold_success_rate" : 0.9
 		},
@@ -21,8 +21,8 @@
 			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
-			"reward_type" : "polar",
-			"goal_reward" : 2,
+			"reward_type" : "sparse",
+			"goal_reward" : 0.5,
 			"continue_after_collision" : false
 		},
 		"control":
@@ -36,19 +36,17 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
-			"beta" : -1,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0.0,
-			"Ne" : 10,
+			"target_coef" : 0.1,
 			"G" : 20
 		},
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_end_099",
-			"save_dir" : "ensemble_value_net",
+			"load_model" : "value_net_029",
+			"save_dir" : "value_net",
 			"x_min" : -12,
 			"x_max" : 12,
 			"x_resolution" : 0.1,
