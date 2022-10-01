@@ -60,7 +60,7 @@ def set_env(params):
         dT=0.1,
         u_min=[0, -np.pi/4],
         u_max=[2, np.pi/4],
-        reward_type='polar',
+        reward_type=params["environment"]["reward_type"],
         target_fix=params["environment"]["target"],
         level=2, t_max=500, obs_list=obs_list,
         coef_dis=params["environment"]["coef_dis"],
