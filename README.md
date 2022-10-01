@@ -26,14 +26,14 @@ python3 examples/train_deep_value_mpc.py # train the single deep value mpc
 ```
 
 ```
-python3 examples/train_deep_value_mpc.py --ensemble # train the ensemble deep value mpc
+python3 examples/train_deep_value_mpc.py --params_dir params/ensemble_value_net.json --ensemble # train the ensemble deep value mpc
 ```
 
 Test
 - the default load directory is defined in the `params/value_net.json` and `params/ensemble_value_net.json` file.
 
 ```
-python3 examples/test_deep_value_mpc.py
+python3 examples/test_deep_value_mpc.py --params_dir params/value_net.json
 ```
 
 Visualize
