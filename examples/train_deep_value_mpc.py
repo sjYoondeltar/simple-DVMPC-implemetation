@@ -183,7 +183,7 @@ def train_process():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Reach-Avoid')
-    parser.add_argument('--params-dir', type=str, default='params/value_net.json', help='directory of the parameters')
+    parser.add_argument('--params_dir', type=str, default='params/value_net.json', help='directory of the parameters')
     parser.add_argument('--ensemble', action='store_true', help='use ensemble')
     parser.add_argument('--seed', type=int, default=1234,
                         help='the seed number of numpy and torch (default: 1234)')
