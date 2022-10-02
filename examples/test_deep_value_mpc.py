@@ -22,13 +22,13 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 
-def set_params():
+def set_params(dir_path):
     
-    if ENSEMBLE:
-        with Path('params/ensemble_net.json').open('r') as f:
+    with Path(dir_path).open('r') as f:
+        
+        if ENSEMBLE:
             params = json.load(f)["ensemble_value_net_params"]
-    else:
-        with Path('params/value_net.json').open('r') as f:
+        else:
             params = json.load(f)["value_net_params"]
     
     return params
@@ -163,6 +163,7 @@ def test_process():
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Reach-Avoid')
+    parser.add_argument('--params_dir', type=str, default='params/value_net.json', help='directory of the parameters')
     parser.add_argument('--ensemble', action='store_true', help='use ensemble')
     parser.add_argument('--seed', type=int, default=1234,
                         help='the seed number of numpy and torch (default: 1234)')
@@ -175,7 +176,7 @@ if __name__ == '__main__':
     
     ENSEMBLE=args.ensemble
     
-    params = set_params()
+    params = set_params(args.params_dir)
     
     RENDER = True
     LOAD = True

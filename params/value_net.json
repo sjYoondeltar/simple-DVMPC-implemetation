@@ -18,9 +18,10 @@
 		{
 			"x_init" : [-10.0, 2.0, 0],
 			"target" : [0.0, -2],
-			"coef_dis" : 0.1,
+			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
+			"reward_type" : "polar",
 			"goal_reward" : 0.5,
 			"continue_after_collision" : false
 		},
@@ -44,7 +45,7 @@
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_025",
+			"load_model" : "value_net_029",
 			"save_dir" : "value_net",
 			"x_min" : -12,
 			"x_max" : 12,
