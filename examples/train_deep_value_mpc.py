@@ -196,7 +196,7 @@ if __name__ == '__main__':
     
     ENSEMBLE=args.ensemble
     
-    params = set_params(args.params)
+    params = set_params(args.params_dir)
     
     RENDER = params["learning_process"]["RENDER"]
     LOAD = params["learning_process"]["LOAD"]

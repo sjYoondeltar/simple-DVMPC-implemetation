@@ -176,7 +176,7 @@ if __name__ == '__main__':
     
     ENSEMBLE=args.ensemble
     
-    params = set_params()
+    params = set_params(args.params_dir)
     
     RENDER = True
     LOAD = True
