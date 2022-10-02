@@ -47,7 +47,7 @@
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_end_099",
+			"load_model" : "value_net_032",
 			"save_dir" : "ensemble_value_net",
 			"x_min" : -12,
 			"x_max" : 12,

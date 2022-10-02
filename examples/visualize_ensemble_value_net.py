@@ -4,14 +4,15 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+import argparse
 import sys
 sys.path.append(".")
 
 from controller.cem_mpc import ValueNet
 
-def main():
+def main(dir_path):
     
-    with Path('params/ensemble_net.json').open('r') as f:
+    with Path(dir_path).open('r') as f:
         params = json.load(f)["ensemble_value_net_params"]
     
     use_time = params["visualization"]["USE_TIME"]
@@ -87,7 +88,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    
+    parser = argparse.ArgumentParser(description='Reach-Avoid')
+    parser.add_argument('--params_dir', type=str, default='params/ensemble_net.json', help='directory of the parameters')
+    
+    args = parser.parse_args()
+    dir_path = args.params_dir
+    
+    main(dir_path)
     
     print("Done.")
 
