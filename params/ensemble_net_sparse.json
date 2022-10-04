@@ -5,8 +5,8 @@
 		"learning_process":
 		{
 			"RENDER" : false,
-			"LOAD" : false,
-			"EXPLORE" : true,
+			"LOAD" : true,
+			"EXPLORE" : false,
 			"USE_TIME" : false,
 			"train_episodes" : 100,
 			"load_model" : "value_net_036",
@@ -17,7 +17,7 @@
 		"environment":
 		{
 			"x_init" : [-10.0, 2.0, 0],
-			"target" : [0.0, -2],
+			"target" : [4.0, 2],
 			"coef_dis" : 0.0,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
@@ -47,7 +47,7 @@
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_032",
+			"load_model" : "value_net_046",
 			"save_dir" : "ensemble_value_net",
 			"x_min" : -12,
 			"x_max" : 12,

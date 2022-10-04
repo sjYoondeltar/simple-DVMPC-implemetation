@@ -234,7 +234,7 @@ class CEMMPC_uni_neural(object):
                     
                     diff_angle = np.arctan2(y_rel, x_rel)
                     
-                    r_target = (1 - np.square(x_rel/20) - np.square(y_rel/20))
+                    r_target = - np.square(x_rel) - np.square(y_rel)
                 
                     # cost_k[k] += -cost_value_new[k][0] * (self.gamma**(i+1)) + self.coef_target_cost * (self.gamma**i+1)*np.sum(np.square(diff_angle/3.14) + np.square(x_rel/10) + np.square(y_rel/10))
                     
