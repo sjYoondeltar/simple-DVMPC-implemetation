@@ -18,7 +18,7 @@
 		{
 			"x_init" : [-10.0, 2.0, 0],
 			"target" : [0.0, -2],
-			"coef_dis" : 0.01,
+			"coef_dis" : 0.0,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
 			"reward_type" : "sparse",

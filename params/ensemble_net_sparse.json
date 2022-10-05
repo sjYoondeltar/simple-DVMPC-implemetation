@@ -5,13 +5,13 @@
 		"learning_process":
 		{
 			"RENDER" : false,
-			"LOAD" : false,
-			"EXPLORE" : true,
+			"LOAD" : true,
+			"EXPLORE" : false,
 			"USE_TIME" : false,
 			"train_episodes" : 100,
 			"load_model" : "value_net_036",
 			"save_dir" : "ensemble_value_net",
-			"length_episode_history" : 5,
+			"length_episode_history" : 10,
 			"threshold_success_rate" : 0.9
 		},
 		"environment":
@@ -22,7 +22,7 @@
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
 			"reward_type" : "sparse",
-			"goal_reward" : 2,
+			"goal_reward" : 0.5,
 			"continue_after_collision" : false
 		},
 		"control":
@@ -40,14 +40,14 @@
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
-			"target_coef" : 0.01,
+			"target_coef" : 0.1,
 			"Ne" : 10,
 			"G" : 20
 		},
 		"visualization":
 		{
 			"USE_TIME" : false,
-			"load_model" : "value_net_032",
+			"load_model" : "value_net_021",
 			"save_dir" : "ensemble_value_net",
 			"x_min" : -12,
 			"x_max" : 12,
