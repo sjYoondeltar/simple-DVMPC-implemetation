@@ -172,7 +172,7 @@ class CEMMPC_uni_neural(object):
 
         for i in range(1, self.N):
 
-            self.clip_du(0)
+            self.clip_du(i)
 
             self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
 
