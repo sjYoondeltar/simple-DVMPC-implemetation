@@ -260,8 +260,14 @@ class MPPIMPC_uni_neural(object):
         self.du_std = (weights_cost * self.du_seq).std(axis=2)
         
         self.du_seq = np.copy(self.du_mu).reshape([self.N, self.u_dim, -1])
+
+        self.clip_du(0)
+
+        self.u_seq[0, :, :] = np.tile(self.u_ex, (1, self.K)) + self.du_seq[0, :, :]
+
+        self.clip_u(0)
         
-        for i in range(0, self.N):
+        for i in range(1, self.N):
 
             self.clip_du(i)
 
