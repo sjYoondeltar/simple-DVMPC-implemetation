@@ -49,14 +49,12 @@ class MPPIMPC_uni_neural(object):
         self.x_dim = 3
         self.u_dim = 2
         self.u_ex = np.array([0.0, 0.0]).reshape([self.u_dim, -1])
-
-        self.top_k = params["control"]["top_k"]
-        self.iter = params["control"]["iter"]
         
         self.lr = lr
 
         self.gamma = 0.99
         self.cost_gamma = params["control"]["cost_gamma"]
+        self.cost_lambda = 1
 
         self.u_min= np.array(params["control"]["u_min"])
         self.u_min[1] = self.u_min[1]*np.pi/180
@@ -172,7 +170,7 @@ class MPPIMPC_uni_neural(object):
 
         for i in range(1, self.N):
 
-            self.clip_du(0)
+            self.clip_du(i)
 
             self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
 
@@ -235,8 +233,6 @@ class MPPIMPC_uni_neural(object):
                     diff_angle = np.arctan2(y_rel, x_rel)
                     
                     r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
-                
-                    # cost_k[k] += -cost_value_new[k][0] * (self.gamma**(i+1)) + self.coef_target_cost * (self.gamma**i+1)*np.sum(np.square(diff_angle/3.14) + np.square(x_rel/10) + np.square(y_rel/10))
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
                     
@@ -244,8 +240,6 @@ class MPPIMPC_uni_neural(object):
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
                     
-                    # cost_k[k] += -cost_value_new[k][0]
-
             xt = x_new
 
             self.x_predict[i+1, :, :] = xt
@@ -255,21 +249,33 @@ class MPPIMPC_uni_neural(object):
 
     def cem_optimize(self, x_init, target, obs_pts, tc):
 
-        for _ in range(self.iter):
+        self.sample_u()
+
+        err_pred = self.rs_pred_cost(x_init, self.u_seq, target, tc)
+        
+        weights_cost = np.exp(-err_pred) / np.sum(np.exp(-err_pred))
+
+        self.du_mu = (weights_cost * self.du_seq).mean(axis=2)
+
+        self.du_std = (weights_cost * self.du_seq).std(axis=2)
+        
+        self.du_seq = np.copy(self.du_mu).reshape([self.N, self.u_dim, -1])
+        
+        for i in range(0, self.N):
+
+            self.clip_du(i)
+
+            self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
+
+            self.clip_u(i)
             
-            self.sample_u()
+        u_final = self.u_seq[0, :, :]
 
-            err_pred = self.rs_pred_cost(x_init, self.u_seq, target, tc)
-
-            self.du_mu = self.du_seq[:, :, np.argsort(err_pred)[:self.top_k]].mean(axis=2)
-
-            self.du_std = self.du_seq[:, :, np.argsort(err_pred)[:self.top_k]].std(axis=2)
-
-        self.u_ex = self.u_seq[0, :, np.argmin(err_pred)].reshape([self.u_dim, -1])
+        self.u_ex = self.du_mu[0, :].reshape([self.u_dim, -1])
 
         self.reset_mu_std()
 
-        return self.u_seq[:, :, np.argsort(err_pred)[:self.top_k]].mean(axis=2), self.x_predict[:, :, np.argsort(err_pred)[:self.top_k]]
+        return u_final, self.x_predict[:, :, np.argsort(weights_cost)[-1]].reshape([-1, self.x_dim, 1])
     
     
     def push_samples(self, transition):
@@ -549,7 +555,6 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
 
             for k in range(self.K):
                     
-                # cost_k[k] += -(1-self.coef_target_cost) * cost_value_new.reshape([1, ]) + self.coef_target_cost * (self.gamma**i+1)*np.sum(np.square(target.squeeze() - x_new[:, k].squeeze()[:2])) 
                 if self.coef_target_cost > 0.001:
                     diff = target.squeeze() - x_new[:, k].squeeze()[:2]
                     
@@ -562,13 +567,9 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1)*r_target
                     
-                    # cost_k[k] += -cost_value_new[k][0] + self.coef_target_cost * r_target
-                    
                 else:
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
-                    
-                    # cost_k[k] += -cost_value_new[k][0]
 
             xt = x_new
 
