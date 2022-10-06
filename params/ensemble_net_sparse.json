@@ -27,6 +27,7 @@
 		},
 		"control":
 		{
+			"Optimizer" : "CEM",
 			"N" : 30,
 			"K" : 10,
 			"dt" : 0.1,

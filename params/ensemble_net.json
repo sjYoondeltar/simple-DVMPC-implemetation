@@ -27,6 +27,7 @@
 		},
 		"control":
 		{
+			"optimizer_type" : "MPPI",
 			"N" : 30,
 			"K" : 10,
 			"dt" : 0.1,

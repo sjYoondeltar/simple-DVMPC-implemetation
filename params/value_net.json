@@ -4,7 +4,7 @@
 	{
 		"learning_process":
 		{
-			"RENDER" : false,
+			"RENDER" : true,
 			"LOAD" : false,
 			"EXPLORE" : true,
 			"USE_TIME" : false,
@@ -27,6 +27,7 @@
 		},
 		"control":
 		{
+			"optimizer_type" : "MPPI",
 			"N" : 30,
 			"K" : 10,
 			"dt" : 0.1,
