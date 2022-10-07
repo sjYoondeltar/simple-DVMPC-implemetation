@@ -253,7 +253,7 @@ class MPPIMPC_uni_neural(object):
 
         err_pred = self.rs_pred_cost(x_init, self.u_seq, target, tc)
         
-        weights_cost = np.exp(-err_pred) / np.sum(np.exp(-err_pred))
+        weights_cost = np.exp(-err_pred * 10) / np.sum(np.exp(-err_pred * 10))
 
         self.du_mu = (weights_cost * self.du_seq).mean(axis=2)
 
@@ -263,7 +263,8 @@ class MPPIMPC_uni_neural(object):
 
         self.clip_du(0)
 
-        self.u_seq[0, :, :] = np.tile(self.u_ex, (1, self.K)) + self.du_seq[0, :, :]
+        self.u_seq = np.tile(self.u_ex, (self.N, 1)).reshape([self.N, self.u_dim, -1])
+        self.u_seq[0, :, :] += self.du_seq[0, :, :]
 
         self.clip_u(0)
         
@@ -275,9 +276,9 @@ class MPPIMPC_uni_neural(object):
 
             self.clip_u(i)
             
-        u_final = self.u_seq[0, :, :]
+        u_final = self.u_seq
 
-        self.u_ex = self.du_mu[0, :].reshape([self.u_dim, -1])
+        self.u_ex = self.u_seq[0, :].reshape([self.u_dim, -1])
 
         self.reset_mu_std()
 
