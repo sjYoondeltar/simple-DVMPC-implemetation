@@ -194,7 +194,7 @@ class MPPIMPC_uni_neural(object):
         
         tc = np.tile(t, (1, self.K))
 
-        cost_k = np.ones((self.K, ))
+        cost_k = np.ones((self.N, self.K))
         
         for i, u in enumerate(u_seq.tolist()):
 
@@ -234,11 +234,11 @@ class MPPIMPC_uni_neural(object):
                     
                     r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
                     
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
+                    cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
                     
                 else:
                     
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
+                    cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
                     
             xt = x_new
 
@@ -253,29 +253,28 @@ class MPPIMPC_uni_neural(object):
 
         err_pred = self.rs_pred_cost(x_init, self.u_seq, target, tc)
         
-        weights_cost = np.exp(-err_pred * 10) / np.sum(np.exp(-err_pred * 10))
-
-        self.du_mu = (weights_cost * self.du_seq).mean(axis=2)
-
-        self.du_std = (weights_cost * self.du_seq).std(axis=2)
-        
-        self.du_seq = np.copy(self.du_mu).reshape([self.N, self.u_dim, -1])
-
-        self.clip_du(0)
-
         self.u_seq = np.tile(self.u_ex, (self.N, 1)).reshape([self.N, self.u_dim, -1])
-        self.u_seq[0, :, :] += self.du_seq[0, :, :]
-
-        self.clip_u(0)
         
-        for i in range(1, self.N):
+        for i in range(self.N):
+        
+            min_err = np.min(err_pred[i, :])
+        
+            weights_cost = np.exp(-(err_pred[i, :]-min_err) * 0.1) / np.sum(np.exp(-(err_pred[i, :]-min_err) * 0.1))
+
+            self.du_mu[i, :] = (weights_cost * self.du_seq[i, :, :]).mean(axis=1)
+        
+            self.du_seq = np.copy(self.du_mu).reshape([self.N, self.u_dim, -1])
 
             self.clip_du(i)
-
-            self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
-
-            self.clip_u(i)
             
+            if i==0:                
+                self.u_seq[i, :, :] += self.du_seq[i, :, :]
+                
+            else:
+                self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
+                
+            self.clip_u(i)
+        
         u_final = self.u_seq
 
         self.u_ex = self.u_seq[0, :].reshape([self.u_dim, -1])
