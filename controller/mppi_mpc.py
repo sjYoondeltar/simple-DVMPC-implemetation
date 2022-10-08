@@ -197,6 +197,9 @@ class MPPIMPC_uni_neural(object):
         cost_k = np.ones((self.N, self.K))
         
         for i, u in enumerate(u_seq.tolist()):
+            
+            if i>0:
+                cost_k[i, :] += cost_k[i-1, k] 
 
             x_new = discrete_dynamics_uni(xt, np.array(u), self.dt)
             tc = tc + self.dt
@@ -259,7 +262,7 @@ class MPPIMPC_uni_neural(object):
         
             min_err = np.min(err_pred[i, :])
         
-            weights_cost = np.exp(-(err_pred[i, :]-min_err) * 0.1) / np.sum(np.exp(-(err_pred[i, :]-min_err) * 0.1))
+            weights_cost = np.exp(err_pred[i, :]) / np.sum(np.exp(err_pred[i, :]))
 
             self.du_mu[i, :] = (weights_cost * self.du_seq[i, :, :]).mean(axis=1)
         
