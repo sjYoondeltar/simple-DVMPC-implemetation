@@ -1,9 +1,9 @@
 # simple-DVMPC-implemetation
 
-This is a unofficial implementation of Deep Value Model Predictive Control (MPC) algorithm in the paper by F.Farshidian
+This is an unofficial implementation of Deep Value Model Predictive Control (MPC) algorithm in the paper by F.Farshidian
 
 ## Algorithm
-- Unlike the original paper, this implementation utilized the Cross Entropy Method (CEM) for MPC optimization.
+- Unlike the original paper, this implementation utilized the Cross Entropy Method (CEM) and Model Predictive Path Integral (MPPI) for MPC optimization.
 
 ## Environment
 2d navigation environment
