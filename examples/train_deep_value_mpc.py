@@ -10,6 +10,7 @@ import random
 from pathlib import Path
 from vehicle_env.navi_maze_env_car import NAVI_ENV
 from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_redq
+from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_redq
 
 
 def set_seed(seed):
@@ -77,22 +78,44 @@ def set_env(params):
 def set_ctrl(params):
     
     if ENSEMBLE:
+        
+        if params["control"]["optimizer_type"] == "CEM":
+            
+            rsmpc = CEMMPC_uni_redq(
+                params=params,
+                load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
+                use_time=USE_TIME,
+                device=device,
+            )
+            
+        else:
     
-        rsmpc = CEMMPC_uni_redq(
-            params=params,
-            load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
-            use_time=USE_TIME,
-            device=device,
-        )
+            rsmpc = MPPIMPC_uni_redq(
+                params=params,
+                load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
+                use_time=USE_TIME,
+                device=device,
+            )
         
     else:
         
-        rsmpc = CEMMPC_uni_neural(
-            params=params,
-            load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
-            use_time=USE_TIME,
-            device=device,
-        )
+        if params["control"]["optimizer_type"] == "CEM":
+            
+            rsmpc = CEMMPC_uni_neural(
+                params=params,
+                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
+                use_time=USE_TIME,
+                device=device,
+            )
+            
+        else:
+            
+            rsmpc = MPPIMPC_uni_neural(
+                params=params,
+                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
+                use_time=USE_TIME,
+                device=device,
+            )
     
     rsmpc.build_value_net()
     
