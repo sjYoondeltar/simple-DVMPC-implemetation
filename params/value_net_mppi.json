@@ -18,7 +18,7 @@
 		{
 			"x_init" : [-10.0, 2.0, 0],
 			"target" : [0.0, -2],
-			"coef_dis" : 0.01,
+			"coef_dis" : 0.1,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1.0,
 			"reward_type" : "polar",
@@ -27,7 +27,7 @@
 		},
 		"control":
 		{
-			"optimizer_type" : "CEM",
+			"optimizer_type" : "MPPI",
 			"N" : 30,
 			"K" : 10,
 			"dt" : 0.1,
