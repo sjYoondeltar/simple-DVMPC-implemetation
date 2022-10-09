@@ -27,7 +27,7 @@
 		},
 		"control":
 		{
-			"optimizer_type" : "MPPI",
+			"optimizer_type" : "CEM",
 			"N" : 30,
 			"K" : 10,
 			"dt" : 0.1,
