@@ -287,11 +287,7 @@ class MPPIMPC_uni_neural(object):
         self.u_seq = np.tile(self.u_ex, (self.N, 1)).reshape([self.N, self.u_dim, -1])
         
         for i in range(self.N):
-        
-            # min_err = np.min(err_pred[i, :])
-        
-            # weights_cost = np.exp(-err_pred[i, :]) / np.sum(np.exp(-err_pred[i, :]))
-        
+            
             min_err = np.min(err_pred)
         
             weights_cost = np.exp(-err_pred) / np.sum(np.exp(-err_pred))
