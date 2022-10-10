@@ -136,24 +136,46 @@ class MPPIMPC_uni_neural(object):
         self.u_seq[n_idx, 1, lower_bool] = self.u_min[1]
 
 
-    def clip_du(self, n_idx):
+    def clip_du(self, n_idx, du_seq=None):
+        
+        if du_seq is None:
 
-        upper_bool = self.du_seq[n_idx, 0, :] > self.du_max[0]
+            upper_bool = self.du_seq[n_idx, 0, :] > self.du_max[0]
 
-        self.du_seq[n_idx, 0, upper_bool] = self.du_max[0]
+            self.du_seq[n_idx, 0, upper_bool] = self.du_max[0]
 
-        lower_bool = self.du_seq[n_idx, 0, :] <= -self.du_max[0]
+            lower_bool = self.du_seq[n_idx, 0, :] <= -self.du_max[0]
 
-        self.du_seq[n_idx, 0, lower_bool] = -self.du_max[0]
+            self.du_seq[n_idx, 0, lower_bool] = -self.du_max[0]
 
-        upper_bool = self.du_seq[n_idx, 1, :] > self.du_max[1]
+            upper_bool = self.du_seq[n_idx, 1, :] > self.du_max[1]
 
-        self.du_seq[n_idx, 1, upper_bool] = self.du_max[1]
+            self.du_seq[n_idx, 1, upper_bool] = self.du_max[1]
 
-        lower_bool = self.du_seq[n_idx, 1, :] <= -self.du_max[1]
+            lower_bool = self.du_seq[n_idx, 1, :] <= -self.du_max[1]
 
-        self.du_seq[n_idx, 1, lower_bool] = -self.du_max[1]
+            self.du_seq[n_idx, 1, lower_bool] = -self.du_max[1]
+            
+        else:
+            
+            upper_bool = du_seq[n_idx, 0, :] > self.du_max[0]
 
+            du_seq[n_idx, 0, upper_bool] = self.du_max[0]
+
+            lower_bool = du_seq[n_idx, 0, :] <= -self.du_max[0]
+
+            du_seq[n_idx, 0, lower_bool] = -self.du_max[0]
+
+            upper_bool = du_seq[n_idx, 1, :] > self.du_max[1]
+
+            du_seq[n_idx, 1, upper_bool] = self.du_max[1]
+
+            lower_bool = du_seq[n_idx, 1, :] <= -self.du_max[1]
+
+            du_seq[n_idx, 1, lower_bool] = -self.du_max[1]
+            
+            return du_seq
+            
 
     def sample_u(self):
         
@@ -194,12 +216,14 @@ class MPPIMPC_uni_neural(object):
         
         tc = np.tile(t, (1, self.K))
 
-        cost_k = np.ones((self.N, self.K))
+        # cost_k = np.ones((self.N, self.K))
+        
+        cost_k = np.ones((self.K, ))
         
         for i, u in enumerate(u_seq.tolist()):
             
-            if i>0:
-                cost_k[i, :] += cost_k[i-1, k] 
+            # if i>0:
+            #     cost_k[i, :] += cost_k[i-1, :] 
 
             x_new = discrete_dynamics_uni(xt, np.array(u), self.dt)
             tc = tc + self.dt
@@ -226,7 +250,6 @@ class MPPIMPC_uni_neural(object):
 
             for k in range(self.K):
                     
-                # cost_k[k] += -(1-self.coef_target_cost) * cost_value_new.reshape([1, ]) + self.coef_target_cost * (self.gamma**i+1)*np.sum(np.square(target.squeeze() - x_new[:, k].squeeze()[:2])) 
                 if self.coef_target_cost > 0.001:
                     diff = target.squeeze() - x_new[:, k].squeeze()[:2]
                     
@@ -237,11 +260,15 @@ class MPPIMPC_uni_neural(object):
                     
                     r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
                     
-                    cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
+                    # cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
+                    
+                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
                     
                 else:
                     
-                    cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
+                    # cost_k[i, k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
+                    
+                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
                     
             xt = x_new
 
@@ -259,22 +286,22 @@ class MPPIMPC_uni_neural(object):
         self.u_seq = np.tile(self.u_ex, (self.N, 1)).reshape([self.N, self.u_dim, -1])
         
         for i in range(self.N):
+            
+            min_err = np.min(err_pred)
         
-            min_err = np.min(err_pred[i, :])
-        
-            weights_cost = np.exp(err_pred[i, :]) / np.sum(np.exp(err_pred[i, :]))
+            weights_cost = np.exp(-err_pred) / np.sum(np.exp(-err_pred))
 
-            self.du_mu[i, :] = (weights_cost * self.du_seq[i, :, :]).mean(axis=1)
+            self.du_mu[i, :] = (weights_cost * self.du_seq[i, :, :]).sum(axis=1)
         
-            self.du_seq = np.copy(self.du_mu).reshape([self.N, self.u_dim, -1])
+            du_w_seq = np.copy(self.du_mu[i, :]).reshape([1, self.u_dim, -1])
 
-            self.clip_du(i)
+            du_w_seq = self.clip_du(0, du_w_seq)
             
             if i==0:                
-                self.u_seq[i, :, :] += self.du_seq[i, :, :]
+                self.u_seq[i, :, :] += du_w_seq[0, :, :]
                 
             else:
-                self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
+                self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + du_w_seq[0, :, :]
                 
             self.clip_u(i)
         
@@ -572,7 +599,7 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
                     
                     diff_angle = np.arctan2(y_rel, x_rel)
                     
-                    r_target = (1 - np.square(x_rel/20) - np.square(y_rel/20))
+                    r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1)*r_target
                     
