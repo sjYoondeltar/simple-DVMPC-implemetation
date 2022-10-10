@@ -18,11 +18,11 @@
 		{
 			"x_init" : [-10.0, 2.0, 0],
 			"target" : [0.0, -2],
-			"coef_dis" : 0.01,
+			"coef_dis" : 0.1,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
 			"reward_type" : "polar",
-			"goal_reward" : 2,
+			"goal_reward" : 0.5,
 			"continue_after_collision" : false
 		},
 		"control":
@@ -37,7 +37,7 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
-			"beta" : -1,
+			"beta" : 0,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
