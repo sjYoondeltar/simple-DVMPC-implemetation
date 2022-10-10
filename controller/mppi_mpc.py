@@ -250,7 +250,6 @@ class MPPIMPC_uni_neural(object):
 
             for k in range(self.K):
                     
-                # cost_k[k] += -(1-self.coef_target_cost) * cost_value_new.reshape([1, ]) + self.coef_target_cost * (self.gamma**i+1)*np.sum(np.square(target.squeeze() - x_new[:, k].squeeze()[:2])) 
                 if self.coef_target_cost > 0.001:
                     diff = target.squeeze() - x_new[:, k].squeeze()[:2]
                     
@@ -600,7 +599,7 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
                     
                     diff_angle = np.arctan2(y_rel, x_rel)
                     
-                    r_target = (1 - np.square(x_rel/20) - np.square(y_rel/20))
+                    r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
                     
                     cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1)*r_target
                     
