@@ -26,19 +26,18 @@ def main(dir_path, model_weights):
     
     with torch.no_grad():
         
-        if use_time:
-            value_net = ValueNet(3, 256)
-        else:
-            value_net = ValueNet(2, 256)
+        load_value_dict = torch.load(str(load_folder / file_name))
+        input_dim = list(load_value_dict.values())[0].shape[1]
         
-        value_net.load_state_dict(torch.load(str(load_folder / file_name)))
+        value_net = ValueNet(input_dim, 256)
+        value_net.load_state_dict(load_value_dict)
         
         a, b = np.meshgrid(
             np.arange(params["visualization"]["x_min"], params["visualization"]["x_max"], params["visualization"]["x_resolution"]),
             np.arange(params["visualization"]["y_min"], params["visualization"]["y_max"], params["visualization"]["y_resolution"])
         )
         
-        if use_time:
+        if input_dim == 3:
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
             
