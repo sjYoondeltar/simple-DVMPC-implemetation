@@ -42,18 +42,6 @@
 			"minibatch_size" : 256,
 			"target_coef" : 0.1,
 			"G" : 20
-		},
-		"visualization":
-		{
-			"USE_TIME" : false,
-			"load_model" : "value_net_029",
-			"save_dir" : "value_net",
-			"x_min" : -12,
-			"x_max" : 12,
-			"x_resolution" : 0.1,
-			"y_min" : -8,
-			"y_max" : 8,
-			"y_resolution" : 0.1
 		}
 	}
 }
