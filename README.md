@@ -38,10 +38,10 @@ python3 examples/test_deep_value_mpc.py --params_dir params/value_net.json
 
 Visualize
 ```
-python3 examples/visualize_value_net.py
+python3 examples/visualize_value_net.py --model_weights value_net_030
 ```
 ```
-python3 examples/visualize_ensemble_value_net.py
+python3 examples/visualize_ensemble_value_net.py --model_weights value_net_030
 ```
 
 ![](img/value_net_026.png)
