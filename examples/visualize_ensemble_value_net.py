@@ -10,30 +10,29 @@ sys.path.append(".")
 
 from controller.cem_mpc import ValueNet
 
-def main(dir_path):
+def main(dir_path, model_weights):
     
     with Path(dir_path).open('r') as f:
-        params = json.load(f)["ensemble_value_net_params"]
+        params = json.load(f)
     
     use_time = params["visualization"]["USE_TIME"]
     tc = 15
     
-    load_folder = Path(params["visualization"]["save_dir"])
-    file_single_name = params["visualization"]["load_model"]
-    file_name_list = [file_single_name + f"_{i}.pth" for i in range(5)]
+    load_folder = Path("ensemble_value_net")
+    file_name_list = [model_weights + f"_{i}.pth" for i in range(5)]
     
     save_folder = Path("ensemble_value_net_plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
     if use_time:
     
-        plot_mean_name = file_single_name + f"_{tc:2.2f}_mean.png"
-        plot_std_name = file_single_name + f"_{tc:2.2f}_std.png"
+        plot_mean_name = model_weights + f"_{tc:2.2f}_mean.png"
+        plot_std_name = model_weights + f"_{tc:2.2f}_std.png"
         
     else:
         
-        plot_mean_name = file_single_name + "_mean.png"
-        plot_std_name = file_single_name + "_std.png"
+        plot_mean_name = model_weights + "_mean.png"
+        plot_std_name = model_weights + "_std.png"
     
     with torch.no_grad():
         
@@ -90,12 +89,14 @@ def main(dir_path):
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Reach-Avoid')
-    parser.add_argument('--params_dir', type=str, default='params/ensemble_net.json', help='directory of the parameters')
+    parser.add_argument('--params_dir', type=str, default='params/vis_params.json', help='directory of the parameters')
+    parser.add_argument('--model_weights', type=str, help='directory of the parameters')
     
     args = parser.parse_args()
     dir_path = args.params_dir
+    model_weights = args.model_weights
     
-    main(dir_path)
+    main(dir_path, model_weights)
     
     print("Done.")
 
