@@ -32,8 +32,10 @@ def main(dir_path, model_weights):
             
             load_value_dict = torch.load(str(load_folder / file_name))
             input_dim = list(load_value_dict.values())[0].shape[1]
+            
             value_net = ValueNet(input_dim, 256)
             value_net.load_state_dict(load_value_dict)
+            
             ensemble_value_list.append(value_net)
         
         a, b = np.meshgrid(
