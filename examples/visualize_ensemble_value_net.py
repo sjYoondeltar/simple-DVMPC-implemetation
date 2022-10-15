@@ -24,16 +24,6 @@ def main(dir_path, model_weights):
     save_folder = Path("ensemble_value_net_plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
-    if use_time:
-    
-        plot_mean_name = model_weights + f"_{tc:2.2f}_mean.png"
-        plot_std_name = model_weights + f"_{tc:2.2f}_std.png"
-        
-    else:
-        
-        plot_mean_name = model_weights + "_mean.png"
-        plot_std_name = model_weights + "_std.png"
-    
     with torch.no_grad():
         
         ensemble_value_list = []
@@ -54,9 +44,15 @@ def main(dir_path, model_weights):
         if use_time:
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
+    
+            plot_mean_name = model_weights + f"_{tc:2.2f}_mean.png"
+            plot_std_name = model_weights + f"_{tc:2.2f}_std.png"
         
         else:
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1])], axis=1)
+            
+            plot_mean_name = model_weights + "_mean.png"
+            plot_std_name = model_weights + "_std.png"
     
         results = np.zeros([len(ensemble_value_list), a.shape[0], a.shape[1]])
         

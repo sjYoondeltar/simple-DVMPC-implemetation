@@ -24,12 +24,6 @@ def main(dir_path, model_weights):
     save_folder = Path("value_net_plot")        
     save_folder.mkdir(parents=True, exist_ok=True)
     
-    if use_time:
-        plot_name = file_name.replace(".pth", ".png").replace(".", f".{tc:2.2f}.")
-    
-    else:
-        plot_name = file_name.replace(".pth", ".png")
-    
     with torch.no_grad():
         
         if use_time:
@@ -47,9 +41,13 @@ def main(dir_path, model_weights):
         if use_time:
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
+            
+            plot_name = file_name.replace(".pth", ".png").replace(".", f".{tc:2.2f}.")
         
         else:
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1])], axis=1)
+            
+            plot_name = file_name.replace(".pth", ".png")
     
         preds_ab = value_net(torch.from_numpy(ab).float())
     
