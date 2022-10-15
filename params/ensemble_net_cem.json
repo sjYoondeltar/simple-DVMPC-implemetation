@@ -44,18 +44,6 @@
 			"target_coef" : 0.0,
 			"Ne" : 10,
 			"G" : 20
-		},
-		"visualization":
-		{
-			"USE_TIME" : false,
-			"load_model" : "value_net_end_099",
-			"save_dir" : "ensemble_value_net",
-			"x_min" : -12,
-			"x_max" : 12,
-			"x_resolution" : 0.1,
-			"y_min" : -8,
-			"y_max" : 8,
-			"y_resolution" : 0.1
 		}
 	}
 }
