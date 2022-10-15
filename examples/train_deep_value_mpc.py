@@ -124,7 +124,7 @@ def set_ctrl(params):
         
     return rsmpc
 
-def train_process():
+def train_process(rsmpc):
     
     reach_history = []
 
@@ -182,7 +182,6 @@ def train_process():
         else:
             print(f"{eps:3d}th episode finished at {env.t} steps with collisions and stopped {env.dist:.4f} from targets\n")
             
-        # reach_history.append(float(env.reach))
         reach_history.append(float(no_collision))
         
         if len(reach_history) > params["learning_process"]["length_episode_history"]:
@@ -232,6 +231,6 @@ if __name__ == '__main__':
 
     rsmpc = set_ctrl(params)
     
-    train_process()
+    train_process(rsmpc)
     
     
