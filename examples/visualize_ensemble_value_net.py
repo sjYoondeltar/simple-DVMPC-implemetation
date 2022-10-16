@@ -15,7 +15,6 @@ def main(dir_path, model_weights):
     with Path(dir_path).open('r') as f:
         params = json.load(f)
     
-    use_time = params["visualization"]["USE_TIME"]
     tc = 15
     
     load_folder = Path("ensemble_value_net")
@@ -29,11 +28,13 @@ def main(dir_path, model_weights):
         ensemble_value_list = []
         
         for file_name in file_name_list:
-            if use_time:
-                value_net = ValueNet(3, 256)
-            else:
-                value_net = ValueNet(2, 256)
-            value_net.load_state_dict(torch.load(str(load_folder / file_name)))
+            
+            load_value_dict = torch.load(str(load_folder / file_name))
+            input_dim = list(load_value_dict.values())[0].shape[1]
+            
+            value_net = ValueNet(input_dim, 256)
+            value_net.load_state_dict(load_value_dict)
+            
             ensemble_value_list.append(value_net)
         
         a, b = np.meshgrid(
@@ -41,7 +42,7 @@ def main(dir_path, model_weights):
             np.arange(params["visualization"]["y_min"], params["visualization"]["y_max"], params["visualization"]["y_resolution"])
         )
         
-        if use_time:
+        if input_dim == 3:
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
     
