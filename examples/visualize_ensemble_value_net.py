@@ -15,7 +15,6 @@ def main(dir_path, model_weights):
     with Path(dir_path).open('r') as f:
         params = json.load(f)
     
-    use_time = params["visualization"]["USE_TIME"]
     tc = 15
     
     load_folder = Path("ensemble_value_net")
