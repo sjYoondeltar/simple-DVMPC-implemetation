@@ -13,7 +13,7 @@ from controller.cem_mpc import ValueNet
 def main(dir_path, model_weights):
     
     with Path(dir_path).open('r') as f:
-        params = json.load(f)
+        params = json.load(f)["visualization"]
     
     tc = 30
     
@@ -32,8 +32,8 @@ def main(dir_path, model_weights):
         value_net.load_state_dict(load_value_dict)
         
         a, b = np.meshgrid(
-            np.arange(params["visualization"]["x_min"], params["visualization"]["x_max"], params["visualization"]["x_resolution"]),
-            np.arange(params["visualization"]["y_min"], params["visualization"]["y_max"], params["visualization"]["y_resolution"])
+            np.arange(params["x_min"], params["x_max"], params["x_resolution"]),
+            np.arange(params["y_min"], params["y_max"], params["y_resolution"])
         )
         
         if input_dim == 3:
