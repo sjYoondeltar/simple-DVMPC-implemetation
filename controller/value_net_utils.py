@@ -56,3 +56,4 @@ class ExperienceReplayMemory:
 
     def sample(self, batch_size):
         return random.sample(self.memory, batch_size)
+
