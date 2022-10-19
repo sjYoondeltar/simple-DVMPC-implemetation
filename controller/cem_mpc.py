@@ -8,6 +8,8 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 from pathlib import Path
+from controller.value_net_utils import ValueNet, ExperienceReplayMemory
+
 
 def continuous_dynamics_uni(state, u):
 
@@ -382,38 +384,6 @@ class Critic(nn.Module):
 
         return q_value
 
-
-class ValueNet(nn.Module):
-    def __init__(self, state_size, hidden_size):
-        super().__init__()
-
-        self.fc1 = nn.Linear(state_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, 1)
-
-    def forward(self, states):
-        
-        x1 = F.leaky_relu(self.fc1(states))
-        
-        x1 = F.leaky_relu(self.fc2(x1))
-
-        q_value = self.fc3(x1)
-
-        return q_value
-
-
-class ExperienceReplayMemory:
-    def __init__(self, buffer_size):
-        self.buffer_size = buffer_size
-        self.memory = []
-
-    def push(self, transition):
-        self.memory.append(transition)
-        if len(self.memory) > self.buffer_size:
-            self.memory.pop(0)
-
-    def sample(self, batch_size):
-        return random.sample(self.memory, batch_size)
 
 class CEMMPC_uni_redq(CEMMPC_uni_neural):
 
