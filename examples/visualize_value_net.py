@@ -8,7 +8,7 @@ import argparse
 import sys
 sys.path.append(".")
 
-from controller.cem_mpc import ValueNet
+from controller.value_net_utils import ValueNet
 
 def main(dir_path, model_weights):
     

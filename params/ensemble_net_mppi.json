@@ -18,11 +18,11 @@
 		{
 			"x_init" : [-10.0, 2.0, 0],
 			"target" : [0.0, -2],
-			"coef_dis" : 0.1,
+			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -1,
 			"reward_type" : "polar",
-			"goal_reward" : 0.5,
+			"goal_reward" : 2,
 			"continue_after_collision" : false
 		},
 		"control":
