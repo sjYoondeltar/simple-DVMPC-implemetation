@@ -364,27 +364,6 @@ class CEMMPC_uni_neural(object):
         self.cost_func.load_state_dict(torch.load(str(self.load_dir)))
 
 
-class Critic(nn.Module):
-    def __init__(self, state_size, action_size, hidden_size):
-        super().__init__()
-
-        self.fc1 = nn.Linear(state_size + action_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, 1)
-
-    def forward(self, states, actions):
-        
-        x1 = torch.cat([states, actions], dim=1)
-
-        x1 = F.gelu(self.fc1(x1))
-
-        x1 = F.gelu(self.fc2(x1))
-
-        q_value = self.fc3(x1)
-
-        return q_value
-
-
 class CEMMPC_uni_redq(CEMMPC_uni_neural):
 
     def __init__(
