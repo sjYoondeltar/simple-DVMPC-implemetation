@@ -49,8 +49,8 @@ class EnsembleValueNet(nn.Module):
         super().__init__()
 
         self.fc1 = nn.Linear(state_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
-        self.fc3 = nn.Linear(hidden_size, num_ensemble)
+        self.fc2 = nn.Linear(hidden_size, hidden_size * num_ensemble)
+        self.fc3 = nn.Linear(hidden_size * num_ensemble, num_ensemble)
 
     def forward(self, states):
         
