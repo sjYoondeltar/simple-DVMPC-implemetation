@@ -663,7 +663,6 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
         
 
 
-
 class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
 
     def __init__(
@@ -865,10 +864,8 @@ class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
                 self.critic_optimizer.zero_grad()
                 loss.backward()
                 self.critic_optimizer.step()
-                        
-                for critic, target_critic in zip(self.critic_list, self.target_critic_list):
-
-                    self.soft_target_update(critic, target_critic)
+                
+                self.soft_target_update(self.cost_func, self.cost_func_target)
                 
             self.eps = np.maximum(self.eps*0.999, 0.001)
         
