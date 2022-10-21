@@ -8,7 +8,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 from pathlib import Path
-from controller.value_net_utils import ValueNet, ExperienceReplayMemory
+from controller.value_net_utils import ValueNet, ExperienceReplayMemory, EnsembleValueNet
 
 
 def continuous_dynamics_uni(state, u):
@@ -662,3 +662,217 @@ class MPPIMPC_uni_redq(MPPIMPC_uni_neural):
             self.critic_list[i].load_state_dict(torch.load(str(self.load_dir[i])))
         
 
+
+
+class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
+
+    def __init__(
+        self,
+        params,
+        load_dir,
+        use_time=True,
+        lr=1e-3,
+        tau=0.01,
+        device=torch.device('cuda'),
+        ):
+        
+        super().__init__(
+            params,
+            load_dir,
+            use_time,
+            lr,
+            tau,
+            device
+        )
+        
+        self.Ne = params["control"]["Ne"]
+        self.beta_cost = params["control"]["beta"]
+        
+        
+    def build_value_net(self):
+        
+        if self.use_time:
+        
+            self.cost_func = EnsembleValueNet(self.x_dim, 256, self.Ne).to(self.device)
+            self.cost_func_target = EnsembleValueNet(self.x_dim, 256, self.Ne).to(self.device)
+        
+        else:
+        
+            self.cost_func = EnsembleValueNet(self.x_dim-1, 256, self.Ne).to(self.device)
+            self.cost_func_target = EnsembleValueNet(self.x_dim-1, 256, self.Ne).to(self.device)
+        
+        self.cost_func_target.load_state_dict(self.cost_func.state_dict())
+        
+        self.critic_optimizer = optim.Adam(
+            list(self.cost_func.parameters()), lr=self.lr, eps=1e-4)
+        
+        
+    def pred_single_cost(self, idx_iqn, states, trainable=True):
+
+        if trainable:
+                
+            cost = self.cost_func(states)[:, idx_iqn].view([-1, 1])
+
+        else:
+            cost = self.cost_func_target(states)[:, idx_iqn].view([-1, 1])
+
+        return cost
+    
+        
+    def pred_ensemble_cost(self, states):
+            
+        self.cost_func.eval()
+        
+        cost_ensemble = self.cost_func(states)
+        
+        mean_cost = cost_ensemble.mean(dim=1, keepdim=True)
+        
+        std_cost = cost_ensemble.std(dim=1, keepdim=True)
+        
+        cost_conservative = mean_cost - self.beta_cost * std_cost
+        
+        return cost_conservative
+    
+        
+    def rs_pred_cost(self, x, u_seq, target, t):
+
+        self.x_predict[0, :, :] = np.tile(x, (1, self.K))
+
+        xt = np.tile(x, (1, self.K))
+        
+        tc = np.tile(t, (1, self.K))
+
+        cost_k = np.ones((self.K, ))
+        
+        for i, u in enumerate(u_seq.tolist()):
+
+            x_new = discrete_dynamics_uni(xt, np.array(u), self.dt)
+            tc = tc + self.dt
+
+            if x_new[2, 0] > np.pi:
+
+                x_new[2, 0] -= 2*np.pi
+            
+            elif x_new[2, 0] < -np.pi:
+            
+                x_new[2, 0] += 2*np.pi
+
+            else:
+
+                pass
+            
+            #calc cost
+            
+            if self.use_time:
+                cost_value_new = self.pred_ensemble_cost(torch.Tensor(np.concatenate([x_new[:2, :], tc]).T).float().to(self.device))
+                
+            else:
+                cost_value_new = self.pred_ensemble_cost(torch.Tensor(x_new[:2, :].T).float().to(self.device))
+
+            for k in range(self.K):
+                    
+                if self.coef_target_cost > 0.001:
+                    diff = target.squeeze() - x_new[:, k].squeeze()[:2]
+                    
+                    x_rel = diff[0]
+                    y_rel = diff[1]
+                    
+                    diff_angle = np.arctan2(y_rel, x_rel)
+                    
+                    r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
+                    
+                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1)*r_target
+                    
+                else:
+                    
+                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
+
+            xt = x_new
+
+            self.x_predict[i+1, :, :] = xt
+
+        return cost_k
+    
+    
+    def train(self):
+        
+        if self.sample_enough:
+            
+            for g_update in range(self.G):
+                
+                if self.n_step==1:
+                    
+                    mini_batch = self.buffer.sample(self.minibatch_size)
+                    
+                else:
+                
+                    mini_batch = self.buffer.main_buffer.sample(self.minibatch_size)
+                        
+                mini_batch = np.array(mini_batch, dtype=object)
+                states = torch.Tensor(np.vstack(mini_batch[:, 0]).reshape([self.minibatch_size, -1])).float().to(self.device)
+                actions = list(mini_batch[:, 1])
+                rewards = torch.Tensor(list(mini_batch[:, 2])).float().to(self.device)
+                next_states = torch.Tensor(np.vstack(mini_batch[:, 3]).reshape([self.minibatch_size, -1])).float().to(self.device)
+                masks = torch.Tensor(list(mini_batch[:, 4])).float().to(self.device)
+                
+                idx = np.random.choice(self.Ne, 2, replace=False)
+                
+                if self.use_time:
+                    
+                    ts = torch.Tensor(list(mini_batch[:, 5])).float().to(self.device).view([self.minibatch_size, 1])
+                    
+                else:
+                    
+                    pass
+                
+                if self.use_time:
+                    value_target_1 = self.pred_single_cost(idx[0], torch.cat([next_states[:, :2], ts+self.dt], 1), trainable=False)
+                    value_target_2 = self.pred_single_cost(idx[1], torch.cat([next_states[:, :2], ts+self.dt], 1), trainable=False)
+                
+                else:
+                    value_target_1 = self.pred_single_cost(idx[0], next_states[:, :2], trainable=False)
+                    value_target_2 = self.pred_single_cost(idx[1], next_states[:, :2], trainable=False)
+                
+                min_value_target = torch.min(value_target_1, value_target_2)
+                
+                if self.n_step == 1:
+
+                    target = rewards.view([-1,1]) + masks.view([-1,1]) * self.gamma * min_value_target
+                
+                else:
+                    
+                    target = rewards.view([-1,1]) + masks.view([-1,1]) * (self.gamma**self.n_step) * min_value_target
+                
+                loss = 0
+                criterion = torch.nn.MSELoss()
+                
+                self.cost_func.train()
+                
+                if self.use_time:
+                
+                    value_trainable = self.cost_func(torch.cat([states[:, :2], ts], 1))
+                    
+                else:
+                
+                    value_trainable = self.cost_func(states[:, :2])
+                
+                for ne in range(self.Ne):
+                    
+                    loss = loss + criterion(value_trainable[:, ne].view([-1,1]), target.detach())
+                    
+                loss = loss / self.Ne
+                
+                self.critic_optimizer.zero_grad()
+                loss.backward()
+                self.critic_optimizer.step()
+                        
+                for critic, target_critic in zip(self.critic_list, self.target_critic_list):
+
+                    self.soft_target_update(critic, target_critic)
+                
+            self.eps = np.maximum(self.eps*0.999, 0.001)
+        
+        else:
+            
+            pass
+        
