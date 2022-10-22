@@ -36,6 +36,10 @@ Test
 python3 examples/test_deep_value_mpc.py --params_dir params/value_net.json
 ```
 
+```
+python3 examples/test_deep_value_mpc.py --params_dir params/ensemble_value_net.json --ensemble
+```
+
 Visualize
 ```
 python3 examples/visualize_value_net.py --model_weights value_net_030
