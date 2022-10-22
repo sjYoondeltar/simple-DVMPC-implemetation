@@ -160,7 +160,7 @@ def train_process(rsmpc):
 
         while not env.t_max_reach and not done :
 
-            u_w, x_pred = rsmpc.cem_optimize(x, target, obs_pts, tc)
+            u_w, x_pred = rsmpc.optimize(x, target, obs_pts, tc)
 
             env.push_traj(np.transpose(x_pred, (2, 0, 1)))
 
