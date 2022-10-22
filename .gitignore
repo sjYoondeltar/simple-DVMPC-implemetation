@@ -132,3 +132,4 @@ value_net/
 value_net_plot/
 ensemble_value_net/
 ensemble_value_net_plot/
+controller/legacy/
