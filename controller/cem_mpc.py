@@ -8,31 +8,10 @@ import torch.optim as optim
 import torch.nn.functional as F
 
 from pathlib import Path
-from controller.value_net_utils import ValueNet, ExperienceReplayMemory, EnsembleValueNet
+from controller.value_net_utils import *
 
 
-def continuous_dynamics_uni(state, u):
-
-    theta = state[2, :]
-    v = u[0, :]
-    w = u[1, :]
-
-    derivative = np.zeros_like(state)
-
-    derivative[0, :] = v*np.cos(theta)
-    derivative[1, :] = v*np.sin(theta)
-    derivative[2, :] = w
-
-    return derivative
-
-
-def discrete_dynamics_uni(state, u, dt):
-    state = state + continuous_dynamics_uni(state, u)*dt
-    
-    return state
-
-
-class CEMMPC_uni_neural(object):
+class CEMMPC_uni_neural(Base_uni_neural):
 
     def __init__(
         self,
@@ -43,59 +22,18 @@ class CEMMPC_uni_neural(object):
         tau=0.01,
         device=torch.device('cuda'),
         ):
-                
-        self.N = params["control"]["N"]
-        self.K = params["control"]["K"]
-
-        self.dt = params["control"]["dt"]
-        self.x_dim = 3
-        self.u_dim = 2
-        self.u_ex = np.array([0.0, 0.0]).reshape([self.u_dim, -1])
+        
+        super().__init__(
+            params,
+            load_dir,
+            use_time,
+            lr,
+            tau,
+            device
+        )
 
         self.top_k = params["control"]["top_k"]
         self.iter = params["control"]["iter"]
-        
-        self.lr = lr
-
-        self.gamma = 0.99
-        self.cost_gamma = params["control"]["cost_gamma"]
-
-        self.u_min= np.array(params["control"]["u_min"])
-        self.u_min[1] = self.u_min[1]*np.pi/180
-        self.u_max= np.array(params["control"]["u_max"])
-        self.u_max[1] = self.u_max[1]*np.pi/180
-        self.du_max = np.array(params["control"]["du_max"])
-        self.du_max[1] = self.du_max[1]*np.pi/180
-
-        self.du_mu = np.zeros((self.N, self.u_dim))
-        self.du_std = np.ones((self.N, self.u_dim))
-
-        self.reset_mu_std()
-        
-        self.x_predict = np.zeros((self.N+1, self.x_dim, self.K))
-        
-        self.n_step = 1
-        
-        self.buffer = ExperienceReplayMemory(buffer_size=params["control"]["buffer_size"])
-        
-        self.device = device
-        
-        self.use_time = use_time
-        
-        self.coef_target_cost = params["control"]["target_coef"]
-        
-        self.G=params["control"]["G"]
-        
-        self.sample_enough = False
-        self.exploration_step = params["control"]["exploration_step"]
-        self.minibatch_size = params["control"]["minibatch_size"]
-        
-        self.tau = tau
-        
-        self.eps = 1
-        
-        self.save_dir = Path(params["learning_process"]["save_dir"])
-        self.load_dir = load_dir
         
         
     def build_value_net(self):
@@ -114,143 +52,9 @@ class CEMMPC_uni_neural(object):
         
         self.critic_optimizer = optim.Adam(
             list(self.cost_func.parameters()), lr=self.lr, eps=1e-4)
-        
-    
-    def soft_target_update(self, critic, target_critic):
-        for param, target_param in zip(critic.parameters(), target_critic.parameters()):
-            target_param.data.copy_(self.tau * param.data + (1.0 - self.tau) * target_param.data)
 
 
-    def clip_u(self, n_idx):
-
-        upper_bool = self.u_seq[n_idx, 0, :] > self.u_max[0]
-
-        self.u_seq[n_idx, 0, upper_bool] = self.u_max[0]
-
-        lower_bool = self.u_seq[n_idx, 0, :] <= self.u_min[0]
-
-        self.u_seq[n_idx, 0, lower_bool] = self.u_min[0]
-
-        upper_bool = self.u_seq[n_idx, 1, :] > self.u_max[1]
-
-        self.u_seq[n_idx, 1, upper_bool] = self.u_max[1]
-
-        lower_bool = self.u_seq[n_idx, 1, :] <= self.u_min[1]
-
-        self.u_seq[n_idx, 1, lower_bool] = self.u_min[1]
-
-
-    def clip_du(self, n_idx):
-
-        upper_bool = self.du_seq[n_idx, 0, :] > self.du_max[0]
-
-        self.du_seq[n_idx, 0, upper_bool] = self.du_max[0]
-
-        lower_bool = self.du_seq[n_idx, 0, :] <= -self.du_max[0]
-
-        self.du_seq[n_idx, 0, lower_bool] = -self.du_max[0]
-
-        upper_bool = self.du_seq[n_idx, 1, :] > self.du_max[1]
-
-        self.du_seq[n_idx, 1, upper_bool] = self.du_max[1]
-
-        lower_bool = self.du_seq[n_idx, 1, :] <= -self.du_max[1]
-
-        self.du_seq[n_idx, 1, lower_bool] = -self.du_max[1]
-
-
-    def sample_u(self):
-        
-        self.u_seq = np.zeros((self.N, self.u_dim, self.K))
-    
-        self.du_seq = np.tile(self.du_mu.reshape([self.N, self.u_dim, -1]), (1, 1, self.K)) + \
-            np.tile(self.du_std.reshape([self.N, self.u_dim, -1]), (1, 1, self.K)) * np.random.randn(self.N, self.u_dim, self.K)
-
-        self.clip_du(0)
-
-        self.u_seq[0, :, :] = np.tile(self.u_ex, (1, self.K)) + self.du_seq[0, :, :]
-
-        self.clip_u(0)
-
-        for i in range(1, self.N):
-
-            self.clip_du(i)
-
-            self.u_seq[i, :, :] = self.u_seq[i-1, :, :] + self.du_seq[i, :, :]
-
-            self.clip_u(i)
-
-    
-    def reset_mu_std(self):
-
-        self.du_mu = np.zeros((self.N, self.u_dim))
-        self.du_mu[:-1, :] = self.du_mu[1:, :]
-        self.du_std = self.du_max*np.ones((self.N, self.u_dim))
-        self.du_std[:, 0] = 0.5*self.du_max[0]
-        self.du_std[:, 1] = 0.5*self.du_max[1]
-
-        
-    def rs_pred_cost(self, x, u_seq, target, t):
-
-        self.x_predict[0, :, :] = np.tile(x, (1, self.K))
-
-        xt = np.tile(x, (1, self.K))
-        
-        tc = np.tile(t, (1, self.K))
-
-        cost_k = np.ones((self.K, ))
-        
-        for i, u in enumerate(u_seq.tolist()):
-
-            x_new = discrete_dynamics_uni(xt, np.array(u), self.dt)
-            tc = tc + self.dt
-
-            if x_new[2, 0] > np.pi:
-
-                x_new[2, 0] -= 2*np.pi
-            
-            elif x_new[2, 0] < -np.pi:
-            
-                x_new[2, 0] += 2*np.pi
-
-            else:
-
-                pass
-            
-            #calc cost
-            
-            if self.use_time:
-                cost_value_new = self.cost_func(torch.Tensor(np.concatenate([x_new[:2, :], tc]).T).float().to(self.device))
-                
-            else:
-                cost_value_new = self.cost_func(torch.Tensor(x_new[:2, :].T).float().to(self.device))
-
-            for k in range(self.K):
-                    
-                if self.coef_target_cost > 0.001:
-                    diff = target.squeeze() - x_new[:, k].squeeze()[:2]
-                    
-                    x_rel = diff[0]
-                    y_rel = diff[1]
-                    
-                    diff_angle = np.arctan2(y_rel, x_rel)
-                    
-                    r_target = np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
-                    
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1) * r_target
-                    
-                else:
-                    
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
-
-            xt = x_new
-
-            self.x_predict[i+1, :, :] = xt
-
-        return cost_k
-
-
-    def cem_optimize(self, x_init, target, obs_pts, tc):
+    def optimize(self, x_init, target, obs_pts, tc):
 
         for _ in range(self.iter):
             
@@ -267,25 +71,6 @@ class CEMMPC_uni_neural(object):
         self.reset_mu_std()
 
         return self.u_seq[:, :, np.argsort(err_pred)[:self.top_k]].mean(axis=2), self.x_predict[:, :, np.argsort(err_pred)[:self.top_k]]
-    
-    
-    def push_samples(self, transition):
-        
-        if self.use_time:
-            
-            self.buffer.push(transition)
-            
-        else:
-            
-            self.buffer.push((transition[0], transition[1], transition[2], transition[3], transition[4]))
-
-        if self.n_step==1:
-            
-            self.sample_enough = True if len(self.buffer.memory) > self.exploration_step else False
-            
-        else:
-
-            self.sample_enough = True if len(self.buffer.main_buffer.memory) > self.exploration_step else False
     
     
     def train(self):
@@ -351,17 +136,6 @@ class CEMMPC_uni_neural(object):
         else:
             
             pass
-        
-    
-    def save_value_net(self, file_path):
-        
-        self.save_dir.mkdir(parents=True, exist_ok=True)
-        save_path = self.save_dir / file_path
-        torch.save(self.cost_func.state_dict(), str(save_path))
-        
-    
-    def load_value_net(self):
-        self.cost_func.load_state_dict(torch.load(str(self.load_dir)))
 
 
 class CEMMPC_uni_redq(CEMMPC_uni_neural):
