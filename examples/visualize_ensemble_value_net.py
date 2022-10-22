@@ -18,25 +18,12 @@ def main(dir_path, model_weights):
     tc = 15
     
     load_folder = Path("ensemble_value_net")
-    # file_name_list = [model_weights + f"_{i}.pth" for i in range(5)]
     file_name = model_weights + ".pth"
     
     save_folder = Path("ensemble_value_net_plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
     with torch.no_grad():
-        
-        # ensemble_value_list = []
-        
-        # for file_name in file_name_list:
-            
-        #     load_value_dict = torch.load(str(load_folder / file_name))
-        #     input_dim = list(load_value_dict.values())[0].shape[1]
-            
-        #     value_net = ValueNet(input_dim, 256)
-        #     value_net.load_state_dict(load_value_dict)
-            
-        #     ensemble_value_list.append(value_net)
         
         load_value_dict = torch.load(str(load_folder / file_name))
         input_dim = list(load_value_dict.values())[0].shape[1]
@@ -64,10 +51,6 @@ def main(dir_path, model_weights):
             plot_std_name = model_weights + "_std.png"
     
         results = np.zeros([output_dim, a.shape[0], a.shape[1]])
-        
-        # for i, value_net in enumerate(ensemble_value_list):
-        #     preds_ab = value_net(torch.from_numpy(ab).float())
-        #     results[i, :, :] = preds_ab.detach().numpy().reshape(a.shape)
         
         preds_ab = value_net(torch.from_numpy(ab).float())
         
