@@ -184,7 +184,6 @@ def test_process(rsmpc):
         
         if env.reach and np.mean(reach_history) > params["learning_process"]["threshold_success_rate"] and len(reach_history)==params["learning_process"]["length_episode_history"]:
             print(f"exiting the eps after reaching\n")
-            rsmpc.save_value_net(f"value_net_{eps:03d}.pth")
             break
         else:
             pass
