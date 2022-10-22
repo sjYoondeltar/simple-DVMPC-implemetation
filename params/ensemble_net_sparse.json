@@ -9,7 +9,7 @@
 			"EXPLORE" : true,
 			"USE_TIME" : false,
 			"train_episodes" : 100,
-			"load_model" : "value_net_036",
+			"load_model" : "value_net_033",
 			"save_dir" : "ensemble_value_net",
 			"length_episode_history" : 10,
 			"threshold_success_rate" : 0.9
@@ -37,7 +37,7 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
-			"beta" : 0.0,
+			"beta" : -0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
