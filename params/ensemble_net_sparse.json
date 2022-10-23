@@ -8,7 +8,7 @@
 			"LOAD" : false,
 			"EXPLORE" : true,
 			"USE_TIME" : false,
-			"train_episodes" : 100,
+			"train_episodes" : 200,
 			"load_model" : "value_net_033",
 			"save_dir" : "ensemble_value_net",
 			"length_episode_history" : 10,
@@ -16,9 +16,9 @@
 		},
 		"environment":
 		{
-			"x_init" : [-10.0, 2.0, 0],
+			"x_init" : [-16.0, -2.0, 0],
 			"t_max" : 1000.0,
-			"target" : [0.0, -2],
+			"target" : [-4.0, 2],
 			"coef_dis" : 0.0,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -2,
