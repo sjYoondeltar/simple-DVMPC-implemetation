@@ -58,6 +58,7 @@ def set_env(params):
     
     env = NAVI_ENV(
         x_init=params["environment"]["x_init"],
+        t_max=params["environment"]["t_max"],
         dT=0.1,
         u_min=[0, -np.pi/4],
         u_max=[2, np.pi/4],
