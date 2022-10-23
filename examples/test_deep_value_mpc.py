@@ -41,7 +41,7 @@ def set_env(params):
         [0.0, 2.0, 4.0, 4.0],
         [9.0, -2.0, 4.0, 4.0],
         [-9.0, -2.0, 4.0, 4.0],
-        [-16.0, 0.0, 10.0, 8.0],
+        # [-16.0, 0.0, 10.0, 8.0],
         [16.0, 0.0, 10.0, 8.0],
         [0.0, 12.0, 40.0, 16.0],
         [0.0, -12.0, 40.0, 16.0]
@@ -64,7 +64,7 @@ def set_env(params):
         u_max=[2, np.pi/4],
         reward_type='polar',
         target_fix=params["environment"]["target"],
-        level=2, t_max=500, obs_list=obs_list,
+        level=2, obs_list=obs_list,
         coef_dis=params["environment"]["coef_dis"],
         coef_angle=params["environment"]["coef_angle"],
         terminal_cond=1,
