@@ -5,19 +5,20 @@
 		"learning_process":
 		{
 			"RENDER" : false,
-			"LOAD" : false,
-			"EXPLORE" : true,
+			"LOAD" : true,
+			"EXPLORE" : false,
 			"USE_TIME" : false,
-			"train_episodes" : 100,
-			"load_model" : "value_net_033",
+			"train_episodes" : 200,
+			"load_model" : "value_net_070",
 			"save_dir" : "ensemble_value_net",
 			"length_episode_history" : 10,
 			"threshold_success_rate" : 0.9
 		},
 		"environment":
 		{
-			"x_init" : [-10.0, 2.0, 0],
-			"target" : [0.0, -2],
+			"x_init" : [-18.0, -1.0, 0],
+			"t_max" : 1000.0,
+			"target" : [-4.0, -1],
 			"coef_dis" : 0.0,
 			"coef_angle" : 0.0,
 			"collision_panalty" : -2,
@@ -37,7 +38,7 @@
 			"u_max" : [1.0, 45],
 			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
-			"beta" : -0.5,
+			"beta" : 0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,

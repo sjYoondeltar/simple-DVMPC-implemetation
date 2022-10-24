@@ -32,7 +32,7 @@ class MPPIMPC_uni_neural(Base_uni_neural):
             device
         )
         
-        self.cost_lambda = 1
+        self.cost_lambda = 0.5
         
         
     def build_value_net(self):
@@ -104,9 +104,9 @@ class MPPIMPC_uni_neural(Base_uni_neural):
         
         for i in range(self.N):
             
-            min_err = np.min(err_pred)
+            max_err = np.max(err_pred)
         
-            weights_cost = np.exp(-err_pred) / np.sum(np.exp(-err_pred))
+            weights_cost = np.exp(-self.cost_lambda*(err_pred-max_err)) / np.sum(np.exp(-self.cost_lambda*(err_pred-max_err)))
 
             self.du_mu[i, :] = (weights_cost * self.du_seq[i, :, :]).sum(axis=1)
         

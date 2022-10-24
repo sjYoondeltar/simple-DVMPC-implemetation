@@ -40,8 +40,8 @@ def set_env(params):
     obs_list =[
         [0.0, 2.0, 4.0, 4.0],
         [9.0, -2.0, 4.0, 4.0],
-        [-9.0, -2.0, 4.0, 4.0],
-        [-16.0, 0.0, 10.0, 8.0],
+        [-10.0, -2.0, 8.0, 4.0],
+        # [-16.0, 0.0, 10.0, 8.0],
         [16.0, 0.0, 10.0, 8.0],
         [0.0, 12.0, 40.0, 16.0],
         [0.0, -12.0, 40.0, 16.0]
@@ -58,12 +58,13 @@ def set_env(params):
     
     env = NAVI_ENV(
         x_init=params["environment"]["x_init"],
+        t_max=params["environment"]["t_max"],
         dT=0.1,
         u_min=[0, -np.pi/4],
         u_max=[2, np.pi/4],
         reward_type=params["environment"]["reward_type"],
         target_fix=params["environment"]["target"],
-        level=2, t_max=500, obs_list=obs_list,
+        level=2, obs_list=obs_list,
         coef_dis=params["environment"]["coef_dis"],
         coef_angle=params["environment"]["coef_angle"],
         terminal_cond=1,
