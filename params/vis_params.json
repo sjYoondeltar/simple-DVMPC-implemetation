@@ -3,7 +3,7 @@
 	"visualization":
 	{
 		"USE_TIME" : false,
-		"x_min" : -12,
+		"x_min" : -20,
 		"x_max" : 12,
 		"x_resolution" : 0.1,
 		"y_min" : -8,
