@@ -17,6 +17,7 @@
 		"environment":
 		{
 			"x_init" : [-10.0, 2.0, 0],
+			"t_max" : 1000.0,
 			"target" : [0.0, -2],
 			"coef_dis" : 0.01,
 			"coef_angle" : 0.0,

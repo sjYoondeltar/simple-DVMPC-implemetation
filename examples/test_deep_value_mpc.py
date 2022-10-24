@@ -9,8 +9,8 @@ import argparse
 import random
 from pathlib import Path
 from vehicle_env.navi_maze_env_car import NAVI_ENV
-from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_redq, CEMMPC_uni_shered_redq
-from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_redq, MPPIMPC_uni_shered_redq
+from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_shered_redq
+from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_shered_redq
 
 
 def set_seed(seed):
@@ -40,8 +40,8 @@ def set_env(params):
     obs_list =[
         [0.0, 2.0, 4.0, 4.0],
         [9.0, -2.0, 4.0, 4.0],
-        [-9.0, -2.0, 4.0, 4.0],
-        [-16.0, 0.0, 10.0, 8.0],
+        [-10.0, -2.0, 8.0, 4.0],
+        # [-16.0, 0.0, 10.0, 8.0],
         [16.0, 0.0, 10.0, 8.0],
         [0.0, 12.0, 40.0, 16.0],
         [0.0, -12.0, 40.0, 16.0]
@@ -58,12 +58,13 @@ def set_env(params):
     
     env = NAVI_ENV(
         x_init=params["environment"]["x_init"],
+        t_max=params["environment"]["t_max"],
         dT=0.1,
         u_min=[0, -np.pi/4],
         u_max=[2, np.pi/4],
         reward_type='polar',
         target_fix=params["environment"]["target"],
-        level=2, t_max=500, obs_list=obs_list,
+        level=2, obs_list=obs_list,
         coef_dis=params["environment"]["coef_dis"],
         coef_angle=params["environment"]["coef_angle"],
         terminal_cond=1,
@@ -148,7 +149,7 @@ def test_process(rsmpc):
 
         while not env.t_max_reach and not done :
 
-            u_w, x_pred = rsmpc.cem_optimize(x, target, obs_pts, tc)
+            u_w, x_pred = rsmpc.optimize(x, target, obs_pts, tc)
 
             env.push_traj(np.transpose(x_pred, (2, 0, 1)))
             
