@@ -32,7 +32,7 @@ class MPPIMPC_uni_neural(Base_uni_neural):
             device
         )
         
-        self.cost_lambda = 5.0
+        self.cost_lambda = 0.5
         
         
     def build_value_net(self):
