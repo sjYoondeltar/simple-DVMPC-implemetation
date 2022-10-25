@@ -37,14 +37,22 @@ def set_params(dir_path):
     
 def set_env(params):
     
+    # obs_list =[
+    #     [0.0, 2.0, 4.0, 4.0],
+    #     [9.0, -2.0, 4.0, 4.0],
+    #     [-10.0, -2.0, 7.0, 4.0],
+    #     # [-16.0, 0.0, 10.0, 8.0],
+    #     [16.0, 0.0, 10.0, 8.0],
+    #     [0.0, 12.0, 40.0, 16.0],
+    #     [0.0, -12.0, 40.0, 16.0]
+    # ]
+    
     obs_list =[
-        [0.0, 2.0, 4.0, 4.0],
-        [9.0, -2.0, 4.0, 4.0],
-        [-10.0, -2.0, 8.0, 4.0],
-        # [-16.0, 0.0, 10.0, 8.0],
-        [16.0, 0.0, 10.0, 8.0],
-        [0.0, 12.0, 40.0, 16.0],
-        [0.0, -12.0, 40.0, 16.0]
+        [-18.0, 0.0, 4.0, 40.0],
+        [12.0, 12.0, 24.0, 18.0],
+        [-10.0, 16.0, 20.0, 8.0],
+        [-10.0, -16.0, 20.0, 8.0],
+        [12.0, -12.0, 24.0, 18.0]
     ]
     
     obs_pts = np.array([[
@@ -79,24 +87,6 @@ def set_env(params):
 def set_ctrl(params):
     
     if ENSEMBLE:
-        
-        # if params["control"]["optimizer_type"] == "CEM":
-            
-        #     rsmpc = CEMMPC_uni_redq(
-        #         params=params,
-        #         load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
-        #         use_time=USE_TIME,
-        #         device=device,
-        #     )
-            
-        # else:
-    
-        #     rsmpc = MPPIMPC_uni_redq(
-        #         params=params,
-        #         load_dir=[Path(params["learning_process"]["save_dir"]) / Path(params["learning_process"]["load_model"] + f"_{i}.pth") for i in range(params["control"]["Ne"])],
-        #         use_time=USE_TIME,
-        #         device=device,
-        #     )
         
         if params["control"]["optimizer_type"] == "CEM":
             
@@ -150,6 +140,10 @@ def train_process(rsmpc):
     for eps in range(train_episodes):
         
         done = False
+        
+        env.renew_init(params["environment"]["x_init"][int(eps%3)])
+        
+        rsmpc.reset_mu_std()
 
         x, target = env.reset()
         

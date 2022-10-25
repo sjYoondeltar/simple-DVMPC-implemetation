@@ -3,11 +3,11 @@
 	"visualization":
 	{
 		"USE_TIME" : false,
-		"x_min" : -12,
+		"x_min" : -20,
 		"x_max" : 12,
 		"x_resolution" : 0.1,
-		"y_min" : -8,
-		"y_max" : 8,
+		"y_min" : -15,
+		"y_max" : 15,
 		"y_resolution" : 0.1
 	}
 }
