@@ -48,7 +48,7 @@ python3 examples/visualize_value_net.py --model_weights value_net_030
 python3 examples/visualize_ensemble_value_net.py --model_weights value_net_030
 ```
 
-![](img/value_net_026.png)
+![](img/value_net_033_mean.png)
 
 
 ## Reference
