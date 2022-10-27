@@ -195,7 +195,7 @@ def train_process(rsmpc):
         else:
             print(f"{eps:3d}th episode finished at {env.t} steps with collisions and stopped {env.dist:.4f} from targets\n")
             
-        reach_history.append(float(no_collision))
+        reach_history.append(float(env.reach))
         
         if len(reach_history) > params["learning_process"]["length_episode_history"]:
             reach_history.pop(0)
