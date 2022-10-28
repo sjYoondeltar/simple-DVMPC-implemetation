@@ -166,7 +166,7 @@ def train_process(rsmpc, train_recorder):
             
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
-            train_recorder.record_episode((x, u, r, xn, mask, tc, x_pred))
+            train_recorder.record_episode((x, u, r, mask, tc, x_pred))
             
             rsmpc.train()
             
