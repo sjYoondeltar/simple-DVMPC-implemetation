@@ -27,9 +27,9 @@ class Recorder(object):
         self.episode_memory = []
         self.n_episode += 1
         
-    def save_logs(self):
+    def save_logs(self, file_path):
         
-        with open(str(self.save_dir / 'tmp.csv'), 'w') as f:
+        with open(str(self.save_dir / file_path), 'w') as f:
             csv_writer = csv.writer(f)
             
             for rows in self.results_memory:
