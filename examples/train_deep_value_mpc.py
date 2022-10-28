@@ -198,14 +198,14 @@ def train_process(rsmpc, train_recorder):
         else:
             pass
         
+        datetime_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        
         if env.reach and np.mean(reach_history) > params["learning_process"]["threshold_success_rate"] and len(reach_history)==params["learning_process"]["length_episode_history"]:
             print(f"exiting the eps after reaching\n")
             rsmpc.save_value_net(f"value_net_{eps:03d}_{datetime_str}.pth")
             break
         else:
             pass
-        
-    datetime_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     
     if np.mean(reach_history) <= params["learning_process"]["threshold_success_rate"]:
         rsmpc.save_value_net(f"value_net_end_{eps:03d}_{datetime_str}.pth")
