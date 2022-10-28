@@ -164,9 +164,9 @@ def train_process(rsmpc, train_recorder):
             
             mask = 1 if not done else 0
             
-            train_recorder.record_episode((x, u, r, xn, mask, tc, x_pred))
+            rsmpc.push_samples((x, u, r, xn, mask, tc))
             
-            rsmpc.push_samples((x, u, r, mask, tc))
+            train_recorder.record_episode((x, u, r, xn, mask, tc, x_pred))
             
             rsmpc.train()
             
