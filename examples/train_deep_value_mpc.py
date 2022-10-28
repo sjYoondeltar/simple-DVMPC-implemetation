@@ -9,6 +9,7 @@ import argparse
 import random
 from pathlib import Path
 from vehicle_env.navi_maze_env_car import NAVI_ENV
+from vehicle_env.recorder import Recorder
 from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_shered_redq
 from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_shered_redq
 
@@ -36,16 +37,6 @@ def set_params(dir_path):
     
     
 def set_env(params):
-    
-    # obs_list =[
-    #     [0.0, 2.0, 4.0, 4.0],
-    #     [9.0, -2.0, 4.0, 4.0],
-    #     [-10.0, -2.0, 7.0, 4.0],
-    #     # [-16.0, 0.0, 10.0, 8.0],
-    #     [16.0, 0.0, 10.0, 8.0],
-    #     [0.0, 12.0, 40.0, 16.0],
-    #     [0.0, -12.0, 40.0, 16.0]
-    # ]
     
     obs_list =[
         [-18.0, 0.0, 4.0, 40.0],
@@ -133,7 +124,7 @@ def set_ctrl(params):
         
     return rsmpc
 
-def train_process(rsmpc):
+def train_process(rsmpc, train_recorder):
     
     reach_history = []
 
@@ -172,6 +163,8 @@ def train_process(rsmpc):
             
             mask = 1 if not done else 0
             
+            train_recorder.record_episode((x, u, r, xn, mask, tc, x_pred))
+            
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
             rsmpc.train()
@@ -189,6 +182,8 @@ def train_process(rsmpc):
             
             if no_collision and (env.wall_contact or env.obs_contact):
                 no_collision = False
+                
+        train_recorder.record_results()
                 
         if no_collision:
             print(f"{eps:3d}th episode finished at {env.t} steps with no collision and stopped {env.dist:.4f} from targets\n")
@@ -238,12 +233,14 @@ if __name__ == '__main__':
     EXPLORE = params["learning_process"]["EXPLORE"]
     USE_TIME = params["learning_process"]["USE_TIME"]
     
+    train_recorder = Recorder(params["learning_process"]["save_dir"] / Path("logs"))
+    
     env, train_episodes, obs_pts = set_env(params)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     rsmpc = set_ctrl(params)
     
-    train_process(rsmpc)
+    train_process(rsmpc, train_recorder)
     
     

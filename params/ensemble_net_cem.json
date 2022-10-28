@@ -10,7 +10,7 @@
 			"USE_TIME" : false,
 			"train_episodes" : 200,
 			"load_model" : "value_net_033",
-			"save_dir" : "ensemble_value_net",
+			"save_dir" : "ensemble_value_net/cem_dense",
 			"length_episode_history" : 5,
 			"threshold_success_rate" : 0.9
 		},
