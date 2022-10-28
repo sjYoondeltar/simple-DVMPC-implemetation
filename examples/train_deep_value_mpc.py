@@ -2,6 +2,7 @@ import sys
 sys.path.append(".")
 
 import time
+import datetime
 import numpy as np
 import torch
 import json
@@ -165,7 +166,7 @@ def train_process(rsmpc, train_recorder):
             
             train_recorder.record_episode((x, u, r, xn, mask, tc, x_pred))
             
-            rsmpc.push_samples((x, u, r, xn, mask, tc))
+            rsmpc.push_samples((x, u, r, mask, tc))
             
             rsmpc.train()
             
@@ -199,15 +200,19 @@ def train_process(rsmpc, train_recorder):
         
         if env.reach and np.mean(reach_history) > params["learning_process"]["threshold_success_rate"] and len(reach_history)==params["learning_process"]["length_episode_history"]:
             print(f"exiting the eps after reaching\n")
-            rsmpc.save_value_net(f"value_net_{eps:03d}.pth")
+            rsmpc.save_value_net(f"value_net_{eps:03d}_{datetime_str}.pth")
             break
         else:
             pass
+        
+    datetime_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     
     if np.mean(reach_history) <= params["learning_process"]["threshold_success_rate"]:
-        rsmpc.save_value_net(f"value_net_end_{eps:03d}.pth")
+        rsmpc.save_value_net(f"value_net_end_{eps:03d}_{datetime_str}.pth")
     else:
         pass
+    
+    train_recorder.save_logs(f"{datetime_str}.csv")
 
 
 if __name__ == '__main__':
