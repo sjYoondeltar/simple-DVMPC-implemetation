@@ -11,6 +11,8 @@ class Recorder(object):
         
         self.save_dir = save_dir
         
+        self.save_dir.mkdir(parents=True, exist_ok=True)
+        
         self.n_episode = 0
         
         self.episode_memory = []
