@@ -4,7 +4,7 @@
 	{
 		"learning_process":
 		{
-			"RENDER" : true,
+			"RENDER" : false,
 			"LOAD" : false,
 			"EXPLORE" : true,
 			"USE_TIME" : false,
