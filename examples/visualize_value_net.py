@@ -17,15 +17,14 @@ def main(dir_path, model_weights):
     
     tc = 30
     
-    load_folder = Path("value_net")
     file_name = model_weights + ".pth"
     
-    save_folder = Path("value_net_plot")        
+    save_folder = Path(model_weights).parent.joinpath("plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
     with torch.no_grad():
         
-        load_value_dict = torch.load(str(load_folder / file_name))
+        load_value_dict = torch.load(file_name)
         input_dim = list(load_value_dict.values())[0].shape[1]
         
         value_net = ValueNet(input_dim, 256)
@@ -40,12 +39,12 @@ def main(dir_path, model_weights):
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
             
-            plot_name = file_name.replace(".pth", ".png").replace(".", f".{tc:2.2f}.")
+            plot_name = file_name.replace(".pth", ".png").replace(".", f".{tc:2.2f}.").split("/")[-1]
         
         else:
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1])], axis=1)
             
-            plot_name = file_name.replace(".pth", ".png")
+            plot_name = file_name.replace(".pth", ".png").split("/")[-1]
     
         preds_ab = value_net(torch.from_numpy(ab).float())
     

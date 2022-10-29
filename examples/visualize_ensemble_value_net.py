@@ -17,15 +17,14 @@ def main(dir_path, model_weights):
     
     tc = 15
     
-    load_folder = Path("ensemble_value_net")
     file_name = model_weights + ".pth"
     
-    save_folder = Path("ensemble_value_net_plot")
+    save_folder = Path(model_weights).parent.joinpath("plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
     with torch.no_grad():
         
-        load_value_dict = torch.load(str(load_folder / file_name))
+        load_value_dict = torch.load(file_name)
         input_dim = list(load_value_dict.values())[0].shape[1]
         output_dim = list(load_value_dict.values())[-1].shape[0]
         
@@ -41,14 +40,14 @@ def main(dir_path, model_weights):
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
     
-            plot_mean_name = model_weights + f"_{tc:2.2f}_mean.png"
-            plot_std_name = model_weights + f"_{tc:2.2f}_std.png"
+            plot_mean_name = (model_weights + f"_{tc:2.2f}_mean.png").split("/")[-1]
+            plot_std_name = (model_weights + f"_{tc:2.2f}_std.png").split("/")[-1]
         
         else:
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1])], axis=1)
             
-            plot_mean_name = model_weights + "_mean.png"
-            plot_std_name = model_weights + "_std.png"
+            plot_mean_name = (model_weights + "_mean.png").split("/")[-1]
+            plot_std_name = (model_weights + "_std.png").split("/")[-1]
     
         results = np.zeros([output_dim, a.shape[0], a.shape[1]])
         
