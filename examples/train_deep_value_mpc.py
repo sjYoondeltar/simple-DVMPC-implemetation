@@ -2,6 +2,7 @@ import sys
 sys.path.append(".")
 
 import time
+import datetime
 import numpy as np
 import torch
 import json
@@ -9,6 +10,7 @@ import argparse
 import random
 from pathlib import Path
 from vehicle_env.navi_maze_env_car import NAVI_ENV
+from vehicle_env.recorder import Recorder
 from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_shered_redq
 from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_shered_redq
 
@@ -36,16 +38,6 @@ def set_params(dir_path):
     
     
 def set_env(params):
-    
-    # obs_list =[
-    #     [0.0, 2.0, 4.0, 4.0],
-    #     [9.0, -2.0, 4.0, 4.0],
-    #     [-10.0, -2.0, 7.0, 4.0],
-    #     # [-16.0, 0.0, 10.0, 8.0],
-    #     [16.0, 0.0, 10.0, 8.0],
-    #     [0.0, 12.0, 40.0, 16.0],
-    #     [0.0, -12.0, 40.0, 16.0]
-    # ]
     
     obs_list =[
         [-18.0, 0.0, 4.0, 40.0],
@@ -133,7 +125,7 @@ def set_ctrl(params):
         
     return rsmpc
 
-def train_process(rsmpc):
+def train_process(rsmpc, train_recorder):
     
     reach_history = []
 
@@ -174,6 +166,8 @@ def train_process(rsmpc):
             
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
+            train_recorder.record_episode((x, u, r, mask, tc, x_pred))
+            
             rsmpc.train()
             
             if RENDER:
@@ -190,6 +184,8 @@ def train_process(rsmpc):
             if no_collision and (env.wall_contact or env.obs_contact):
                 no_collision = False
                 
+        train_recorder.record_results()
+                
         if no_collision:
             print(f"{eps:3d}th episode finished at {env.t} steps with no collision and stopped {env.dist:.4f} from targets\n")
         else:
@@ -202,17 +198,21 @@ def train_process(rsmpc):
         else:
             pass
         
+        datetime_str = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        
         if env.reach and np.mean(reach_history) > params["learning_process"]["threshold_success_rate"] and len(reach_history)==params["learning_process"]["length_episode_history"]:
             print(f"exiting the eps after reaching\n")
-            rsmpc.save_value_net(f"value_net_{eps:03d}.pth")
+            rsmpc.save_value_net(f"value_net_{eps:03d}_{datetime_str}.pth")
             break
         else:
             pass
     
     if np.mean(reach_history) <= params["learning_process"]["threshold_success_rate"]:
-        rsmpc.save_value_net(f"value_net_end_{eps:03d}.pth")
+        rsmpc.save_value_net(f"value_net_end_{eps:03d}_{datetime_str}.pth")
     else:
         pass
+    
+    train_recorder.save_logs(f"{datetime_str}.csv")
 
 
 if __name__ == '__main__':
@@ -238,12 +238,14 @@ if __name__ == '__main__':
     EXPLORE = params["learning_process"]["EXPLORE"]
     USE_TIME = params["learning_process"]["USE_TIME"]
     
+    train_recorder = Recorder(params["learning_process"]["save_dir"] / Path("logs"))
+    
     env, train_episodes, obs_pts = set_env(params)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     rsmpc = set_ctrl(params)
     
-    train_process(rsmpc)
+    train_process(rsmpc, train_recorder)
     
     
