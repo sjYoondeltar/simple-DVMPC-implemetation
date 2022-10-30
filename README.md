@@ -42,10 +42,10 @@ python3 examples/test_deep_value_mpc.py --params_dir params/ensemble_value_net.j
 
 Visualize
 ```
-python3 examples/visualize_value_net.py --model_weights value_net_030
+python3 postprocess/visualize_value_net.py --model_weights runs/value_net/mppi_dense/value_net_028
 ```
 ```
-python3 examples/visualize_ensemble_value_net.py --model_weights value_net_030
+python3 postprocess/visualize_ensemble_value_net.py --model_weights runs/ensemble_value_net/mppi_dense/value_net_033
 ```
 
 ![](img/value_net_033_mean.png)

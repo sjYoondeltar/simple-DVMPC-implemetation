@@ -8,28 +8,26 @@ import argparse
 import sys
 sys.path.append(".")
 
-from controller.value_net_utils import EnsembleValueNet
+from controller.value_net_utils import ValueNet
 
 def main(dir_path, model_weights):
     
     with Path(dir_path).open('r') as f:
         params = json.load(f)["visualization"]
     
-    tc = 15
+    tc = 30
     
-    load_folder = Path("ensemble_value_net")
     file_name = model_weights + ".pth"
     
-    save_folder = Path("ensemble_value_net_plot")
+    save_folder = Path(model_weights).parent.joinpath("plot")
     save_folder.mkdir(parents=True, exist_ok=True)
     
     with torch.no_grad():
         
-        load_value_dict = torch.load(str(load_folder / file_name))
+        load_value_dict = torch.load(file_name)
         input_dim = list(load_value_dict.values())[0].shape[1]
-        output_dim = list(load_value_dict.values())[-1].shape[0]
         
-        value_net = EnsembleValueNet(input_dim, 256, output_dim)
+        value_net = ValueNet(input_dim, 256)
         value_net.load_state_dict(load_value_dict)
         
         a, b = np.meshgrid(
@@ -40,44 +38,23 @@ def main(dir_path, model_weights):
         if input_dim == 3:
             c = tc * np.ones_like(a.reshape(-1, 1))*(-np.pi/2)
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1]), c], axis=1)
-    
-            plot_mean_name = model_weights + f"_{tc:2.2f}_mean.png"
-            plot_std_name = model_weights + f"_{tc:2.2f}_std.png"
+            
+            plot_name = file_name.replace(".pth", ".png").replace(".", f".{tc:2.2f}.").split("/")[-1]
         
         else:
             ab = np.concatenate([a.reshape([-1,1]), b.reshape([-1,1])], axis=1)
             
-            plot_mean_name = model_weights + "_mean.png"
-            plot_std_name = model_weights + "_std.png"
+            plot_name = file_name.replace(".pth", ".png").split("/")[-1]
     
-        results = np.zeros([output_dim, a.shape[0], a.shape[1]])
-        
         preds_ab = value_net(torch.from_numpy(ab).float())
-        
-        for i in range(output_dim):
-            results[i, :, :] = preds_ab[:, i].detach().numpy().reshape(a.shape)
-        
-        mean_results = np.mean(results, axis=0)
-        std_results = np.std(results, axis=0)
-        
-    cp_m = plt.contourf(a, b, mean_results)
+    
+    cp = plt.contourf(a, b, preds_ab.detach().numpy().reshape(a.shape))
 
-    plt.colorbar(cp_m)
+    plt.colorbar(cp)
     plt.gca().set_aspect('equal', adjustable='box')
     plt.draw()
-    plt.savefig(str(save_folder / plot_mean_name))
+    plt.savefig(str(save_folder / plot_name))
     
-    plt.close()
-    
-    cp_s = plt.contourf(a, b, std_results)
-
-    plt.colorbar(cp_s)
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.draw()
-    plt.savefig(str(save_folder / plot_std_name))
-    
-    plt.close()
-
 
 if __name__ == '__main__':
     
