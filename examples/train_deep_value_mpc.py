@@ -55,15 +55,19 @@ def train_process(rsmpc, train_recorder):
             
             if RENDER:
                 env.render()
+                
+            if no_collision and (env.wall_contact or env.obs_contact):
+                no_collision = False
+            else:
+                no_collision = True
+            
+            train_recorder.record_episode((x, u, r, mask, tc, 0, env.reach, no_collision))
             
             if env.reach:
                 print(f"reach at {env.t}\n")
                 break
-            
-            if no_collision and (env.wall_contact or env.obs_contact):
-                no_collision = False
-            
-            train_recorder.record_episode((x, u, r, mask, tc, x_pred, env.reach, not no_collision))
+            else:
+                pass
             
             x = xn
             tc = tc + env.dT
