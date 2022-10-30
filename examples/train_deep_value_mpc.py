@@ -1,129 +1,14 @@
 import sys
 sys.path.append(".")
 
-import time
 import datetime
 import numpy as np
 import torch
-import json
 import argparse
-import random
 from pathlib import Path
-from vehicle_env.navi_maze_env_car import NAVI_ENV
 from vehicle_env.recorder import Recorder
-from controller.cem_mpc import CEMMPC_uni_neural, CEMMPC_uni_shered_redq
-from controller.mppi_mpc import MPPIMPC_uni_neural, MPPIMPC_uni_shered_redq
+from common_utils import *
 
-
-def set_seed(seed):
-    
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    np.random.seed(seed)
-    random.seed(seed)
-    # torch.backends.cudnn.deterministic = True
-    # torch.backends.cudnn.benchmark = False
-
-
-def set_params(dir_path):
-    
-    with Path(dir_path).open('r') as f:
-        
-        if ENSEMBLE:
-            params = json.load(f)["ensemble_value_net_params"]
-        else:
-            params = json.load(f)["value_net_params"]
-    
-    return params
-    
-    
-def set_env(params):
-    
-    obs_list =[
-        [-18.0, 0.0, 4.0, 40.0],
-        [12.0, 12.0, 24.0, 18.0],
-        [-10.0, 16.0, 20.0, 8.0],
-        [-10.0, -16.0, 20.0, 8.0],
-        [12.0, -12.0, 24.0, 18.0]
-    ]
-    
-    obs_pts = np.array([[
-        [obs[0]-obs[2]/2, obs[1]-obs[3]/2],
-        [obs[0]+obs[2]/2, obs[1]-obs[3]/2],
-        [obs[0]+obs[2]/2, obs[1]+obs[3]/2],
-        [obs[0]-obs[2]/2, obs[1]+obs[3]/2],
-        ] for obs in obs_list])
-    
-    train_episodes = params["learning_process"]["train_episodes"]
-    
-    env = NAVI_ENV(
-        x_init=params["environment"]["x_init"],
-        t_max=params["environment"]["t_max"],
-        dT=0.1,
-        u_min=[0, -np.pi/4],
-        u_max=[2, np.pi/4],
-        reward_type=params["environment"]["reward_type"],
-        target_fix=params["environment"]["target"],
-        level=2, obs_list=obs_list,
-        coef_dis=params["environment"]["coef_dis"],
-        coef_angle=params["environment"]["coef_angle"],
-        terminal_cond=1,
-        collision_panalty=params["environment"]["collision_panalty"],
-        goal_reward=params["environment"]["goal_reward"],
-        continue_after_collision=params["environment"]["continue_after_collision"]
-    )
-    
-    return env, train_episodes, obs_pts
-
-
-def set_ctrl(params):
-    
-    if ENSEMBLE:
-        
-        if params["control"]["optimizer_type"] == "CEM":
-            
-            rsmpc = CEMMPC_uni_shered_redq(
-                params=params,
-                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
-                use_time=USE_TIME,
-                device=device,
-            )
-            
-        else:
-    
-            rsmpc = MPPIMPC_uni_shered_redq(
-                params=params,
-                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
-                use_time=USE_TIME,
-                device=device,
-            )
-        
-    else:
-        
-        if params["control"]["optimizer_type"] == "CEM":
-            
-            rsmpc = CEMMPC_uni_neural(
-                params=params,
-                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
-                use_time=USE_TIME,
-                device=device,
-            )
-            
-        else:
-            
-            rsmpc = MPPIMPC_uni_neural(
-                params=params,
-                load_dir=Path(params["learning_process"]["save_dir"]) / (params["learning_process"]["load_model"] + '.pth'),
-                use_time=USE_TIME,
-                device=device,
-            )
-    
-    rsmpc.build_value_net()
-    
-    if LOAD:
-        rsmpc.load_value_net()
-        
-    return rsmpc
 
 def train_process(rsmpc, train_recorder):
     
@@ -166,23 +51,27 @@ def train_process(rsmpc, train_recorder):
             
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
-            train_recorder.record_episode((x, u, r, mask, tc, x_pred))
-            
             rsmpc.train()
             
             if RENDER:
                 env.render()
+                
+            if no_collision and (env.wall_contact or env.obs_contact):
+                no_collision = False
+            else:
+                no_collision = True
+            
+            train_recorder.record_episode((x, u, r, mask, tc, 0, env.reach, no_collision))
             
             if env.reach:
                 print(f"reach at {env.t}\n")
                 break
-
+            else:
+                pass
+            
             x = xn
             tc = tc + env.dT
             u_ex = u[1][0]
-            
-            if no_collision and (env.wall_contact or env.obs_contact):
-                no_collision = False
                 
         train_recorder.record_results()
                 
@@ -231,20 +120,22 @@ if __name__ == '__main__':
     
     ENSEMBLE=args.ensemble
     
-    params = set_params(args.params_dir)
+    params = set_params(args.params_dir, ENSEMBLE)
     
     RENDER = params["learning_process"]["RENDER"]
     LOAD = params["learning_process"]["LOAD"]
     EXPLORE = params["learning_process"]["EXPLORE"]
-    USE_TIME = params["learning_process"]["USE_TIME"]
-    
-    train_recorder = Recorder(params["learning_process"]["save_dir"] / Path("logs"))
-    
-    env, train_episodes, obs_pts = set_env(params)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    train_recorder = Recorder(
+        fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred", "reach", "collision"],
+        save_dir=params["learning_process"]["save_dir"] / Path("logs")
+    )
+    
+    env, train_episodes, obs_pts = set_env(params)
 
-    rsmpc = set_ctrl(params)
+    rsmpc = set_ctrl(params, device, ENSEMBLE)
     
     train_process(rsmpc, train_recorder)
     
