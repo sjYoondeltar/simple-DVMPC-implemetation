@@ -51,8 +51,6 @@ def train_process(rsmpc, train_recorder):
             
             rsmpc.push_samples((x, u, r, xn, mask, tc))
             
-            train_recorder.record_episode((x, u, r, mask, tc, x_pred))
-            
             rsmpc.train()
             
             if RENDER:
@@ -61,13 +59,15 @@ def train_process(rsmpc, train_recorder):
             if env.reach:
                 print(f"reach at {env.t}\n")
                 break
-
-            x = xn
-            tc = tc + env.dT
-            u_ex = u[1][0]
             
             if no_collision and (env.wall_contact or env.obs_contact):
                 no_collision = False
+            
+            train_recorder.record_episode((x, u, r, mask, tc, x_pred, env.reach, not no_collision))
+            
+            x = xn
+            tc = tc + env.dT
+            u_ex = u[1][0]
                 
         train_recorder.record_results()
                 
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     train_recorder = Recorder(
-        fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred"],
+        fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred", "reach", "collision"],
         save_dir=params["learning_process"]["save_dir"] / Path("logs")
     )
     
