@@ -124,7 +124,10 @@ if __name__ == '__main__':
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    train_recorder = Recorder(params["learning_process"]["save_dir"] / Path("logs"))
+    train_recorder = Recorder(
+        fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred"],
+        save_dir=params["learning_process"]["save_dir"] / Path("logs")
+    )
     
     env, train_episodes, obs_pts = set_env(params)
 
