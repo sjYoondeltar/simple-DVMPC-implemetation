@@ -55,7 +55,7 @@ if __name__ == '__main__':
     
     reward_plot_draw = RewardPlotter(save_dir=Path("runs/value_net/cem_dense/plot"))
     
-    rewards_per_episode, is_reach_per_episode = reward_plot_draw.calc_results("runs/value_net/cem_dense/logs/20221030_175756.csv")
+    rewards_per_episode, is_reach_per_episode = reward_plot_draw.calc_results("runs/value_net/cem_dense/logs/20221030_222322.csv")
     
     print(rewards_per_episode)
     
