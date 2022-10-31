@@ -2,6 +2,7 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class RewardPlotter(object):
@@ -37,27 +38,48 @@ class RewardPlotter(object):
         return rewards_per_episode, is_reach_per_episode
     
         
-    def save_reward(self):
+    def save_reward_plot(self, file_path_list):
         
-        episode_array = np.array(self.df['episode'])
-        reward_array = np.array(self.df['r'])
+        fig = plt.figure(figsize=(40, 20))
         
-        epi_f = np.max(episode_array) + 1
+        ax1 = fig.add_subplot(2, 1, 1)
         
-        for epi in range(epi_f):
-            self.episode_rewards.append(np.sum(reward_array[episode_array == epi]))
-
+        ax2 = fig.add_subplot(2, 1, 2)
+        
+        for file_path in file_path_list:
+        
+            rewards_per_episode, is_reach_per_episode = self.calc_results(file_path)
+            
+            ax1.plot(rewards_per_episode, label=file_path.split('/')[2])
+        
+            ax2.plot(is_reach_per_episode)
+        
+        ax1.set_ylabel("cumulative rewards")
+        
+        ax1.grid()
+        ax1.legend()
+        ax1.set_xlim([0, 100])
+        
+        ax2.set_ylabel("success rate")
+        ax2.set_xlabel("episode")
+        ax2.set_xlim([0, 100])
+        ax2.grid()
+        
+        plt.draw()
+        plt.savefig(self.save_dir / "reward_plot.png")
+        plt.close()
 
 
 if __name__ == '__main__':
     
-    # df = pd.read_csv("runs/value_net/cem_dense/logs/20221030_175756.csv")
+    reward_plot_draw = RewardPlotter(save_dir=Path("runs/comparison"))
     
-    reward_plot_draw = RewardPlotter(save_dir=Path("runs/value_net/cem_dense/plot"))
+    logs_list = [
+        "runs/value_net/cem_dense/logs/20221030_222322.csv",
+        "runs/value_net/cem_sparse/logs/20221031_225509.csv",
+        "runs/ensemble_value_net/mppi_dense/logs/20221031_005341.csv",
+        "runs/ensemble_value_net/mppi_sparse/logs/20221031_132405.csv"
+    ]
     
-    rewards_per_episode, is_reach_per_episode = reward_plot_draw.calc_results("runs/value_net/cem_dense/logs/20221030_222322.csv")
-    
-    print(rewards_per_episode)
-    
-    print(is_reach_per_episode)
+    reward_plot_draw.save_reward_plot(logs_list)
     
