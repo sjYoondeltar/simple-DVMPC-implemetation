@@ -225,13 +225,13 @@ class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
         
         if self.use_time:
         
-            self.cost_func = EnsembleValueNet(self.x_dim, 512, self.Ne).to(self.device)
-            self.cost_func_target = EnsembleValueNet(self.x_dim, 512, self.Ne).to(self.device)
+            self.cost_func = EnsembleValueNet(self.x_dim, 256, self.Ne).to(self.device)
+            self.cost_func_target = EnsembleValueNet(self.x_dim, 256, self.Ne).to(self.device)
         
         else:
         
-            self.cost_func = EnsembleValueNet(self.x_dim-1, 512, self.Ne).to(self.device)
-            self.cost_func_target = EnsembleValueNet(self.x_dim-1, 512, self.Ne).to(self.device)
+            self.cost_func = EnsembleValueNet(self.x_dim-1, 256, self.Ne).to(self.device)
+            self.cost_func_target = EnsembleValueNet(self.x_dim-1, 256, self.Ne).to(self.device)
         
         self.cost_func_target.load_state_dict(self.cost_func.state_dict())
         
