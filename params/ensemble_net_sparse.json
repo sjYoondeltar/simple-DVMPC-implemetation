@@ -11,7 +11,7 @@
 			"train_episodes" : 200,
 			"load_model" : "value_net_070",
 			"save_dir" : "runs/ensemble_value_net/mppi_sparse",
-			"length_episode_history" : 5,
+			"length_episode_history" : 10,
 			"threshold_success_rate" : 0.9
 		},
 		"environment":
@@ -38,7 +38,7 @@
 			"u_max" : [2.0, 45],
 			"du_max" : [1, 22.5],
 			"buffer_size" : 16384,
-			"beta" : 0.1,
+			"beta" : -0.5,
 			"cost_gamma" : 1,
 			"exploration_step" : 1500,
 			"minibatch_size" : 256,
