@@ -11,7 +11,7 @@
 			"train_episodes" : 200,
 			"load_model" : "value_net_026",
 			"save_dir" : "runs/value_net/cem_sparse",
-			"length_episode_history" : 5,
+			"length_episode_history" : 10,
 			"threshold_success_rate" : 0.9
 		},
 		"environment":
