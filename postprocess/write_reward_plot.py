@@ -52,18 +52,19 @@ class RewardPlotter(object):
             
             model_name_list = file_path.split('/')
             
-            ax1.plot(rewards_per_episode, label=model_name_list[1] + "+" + model_name_list[2])
+            ax1.plot(rewards_per_episode, label=model_name_list[1] + "+" + model_name_list[2], linewidth=5)
         
-            ax2.plot(is_reach_per_episode)
+            ax2.plot(is_reach_per_episode, linewidth=5)
         
-        ax1.set_ylabel("cumulative rewards")
+        ax1.set_ylabel("cumulative rewards", fontsize=15)
         
         ax1.grid()
-        ax1.legend(loc='upper left')
+        ax1.legend(loc='upper left', fontsize=15)
         ax1.set_xlim([0, 40])
+        ax1.set_ylim([-3, 1.5])
         
-        ax2.set_ylabel("success to reach a goal")
-        ax2.set_xlabel("episode")
+        ax2.set_ylabel("success to reach a goal", fontsize=15)
+        ax2.set_xlabel("episode", fontsize=15)
         ax2.set_xlim([0, 40])
         ax2.grid()
         
