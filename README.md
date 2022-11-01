@@ -51,6 +51,11 @@ python3 postprocess/visualize_ensemble_value_net.py --model_weights runs/ensembl
 ![](img/value_net_033_mean.png)
 
 
+Reward plot
+
+![](img/reward_plot.png)
+
+
 ## Reference
 - [2D vehicle Env](https://github.com/MorvanZhou/Reinforcement-learning-with-tensorflow)
 - Deep Value MPC : 
