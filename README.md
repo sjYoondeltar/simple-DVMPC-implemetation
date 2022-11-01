@@ -8,8 +8,8 @@ This is an unofficial implementation of Deep Value Model Predictive Control (MPC
 ## Environment
 2d navigation environment
 - The environment is a 2d world with walls and goal.
-- the start point : (-10, 2)
-- the end point : ( 0, -2)
+- the start point : (-14, -10), (-14, 0), (-14, 10)
+- the end point : (12, 0)
 
 ![](img/screenshot.png)
 
@@ -49,6 +49,11 @@ python3 postprocess/visualize_ensemble_value_net.py --model_weights runs/ensembl
 ```
 
 ![](img/value_net_033_mean.png)
+
+
+Reward plot
+
+![](img/reward_plot.png)
 
 
 ## Reference
