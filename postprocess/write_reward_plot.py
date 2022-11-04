@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
+import argparse
 
 
 class RewardPlotter(object):
@@ -75,14 +76,27 @@ class RewardPlotter(object):
 
 if __name__ == '__main__':
     
+    parser = argparse.ArgumentParser(description='Log-comparison')
+    parser.add_argument('--log_list', type=str, default=[], nargs='+', help='directory of csv log files')
+    
+    args = parser.parse_args()
+    
+    log_list = args.log_list
+    
     reward_plot_draw = RewardPlotter(save_dir=Path("runs/comparison"))
     
-    logs_list = [
-        "runs/value_net/cem_dense/logs/20221030_222322.csv",
-        # "runs/value_net/cem_sparse/logs/20221031_225509.csv",
-        "runs/ensemble_value_net/mppi_dense/logs/20221031_005341.csv",
-        # "runs/ensemble_value_net/mppi_sparse/logs/20221031_132405.csv"
-    ]
+    # logs_list = [
+    #     "runs/value_net/cem_dense/logs/20221030_222322.csv",
+    #     # "runs/value_net/cem_sparse/logs/20221031_225509.csv",
+    #     "runs/ensemble_value_net/mppi_dense/logs/20221031_005341.csv",
+    #     # "runs/ensemble_value_net/mppi_sparse/logs/20221031_132405.csv"
+    # ]
     
-    reward_plot_draw.save_reward_plot(logs_list)
-    
+    if len(log_list) == 0:
+        
+        print("Please input log file path.")
+        
+    else:
+        
+        reward_plot_draw.save_reward_plot(log_list)
+
