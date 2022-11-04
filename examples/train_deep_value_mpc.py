@@ -61,7 +61,7 @@ def train_process(rsmpc, train_recorder):
             else:
                 no_collision = True
             
-            train_recorder.record_episode((x, u, r, mask, tc, 0, env.reach, no_collision))
+            train_recorder.record_episode((x, u, r, mask, tc, x_pred, env.reach, no_collision))
             
             if env.reach:
                 print(f"reach at {env.t}\n")
