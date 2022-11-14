@@ -102,7 +102,7 @@ def train_process(rsmpc, train_recorder, params):
         pass
     
     train_recorder.save_logs(f"{datetime_str}.csv")
-    train_recorder.save_params(f"{datetime_str}.json")
+    train_recorder.save_params(params, f"{datetime_str}.json")
 
 
 if __name__ == '__main__':
@@ -131,7 +131,8 @@ if __name__ == '__main__':
     
     train_recorder = Recorder(
         fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred", "reach", "collision"],
-        save_dir=params["learning_process"]["save_dir"] / Path("logs")
+        save_log_dir=params["learning_process"]["save_dir"] / Path("logs"),
+        save_param_dir=params["learning_process"]["save_dir"] / Path("params")
     )
     
     env, train_episodes, obs_pts = set_env(params)
