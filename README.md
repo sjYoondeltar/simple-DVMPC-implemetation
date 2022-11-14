@@ -24,14 +24,14 @@ Train
 - ensemble : if True, train the ensemble model
 - seed : seed number (default: 1234)
 - render : if True, visualize the agent on the environment
-- the default parameters are defined in the `params/value_net.json` and `params/ensemble_value_net.json` file.
+- the default parameters are defined in the `params/value_net_cem` and `params/ensemble_net_mppi.json` file.
 
 ```bash
 python3 examples/train_deep_value_mpc.py # train the single deep value mpc
 ```
 
 ```bash
-python3 examples/train_deep_value_mpc.py --params_dir params/ensemble_value_net.json --ensemble # train the ensemble deep value mpc
+python3 examples/train_deep_value_mpc.py --params_dir params/ensemble_net_mppi.json --ensemble # train the ensemble deep value mpc
 ```
 
 Test
@@ -39,11 +39,11 @@ Test
 - the default load directory is defined in the `params/value_net_cem.json` or other files.
 
 ```bash
-python3 examples/test_deep_value_mpc.py --params_dir params/value_net.json
+python3 examples/test_deep_value_mpc.py --params_dir params/value_net_cem.json
 ```
 
 ```bash
-python3 examples/test_deep_value_mpc.py --params_dir params/ensemble_value_net.json --ensemble
+python3 examples/test_deep_value_mpc.py --params_dir params/ensemble_net_mppi.json --ensemble
 ```
 
 Visualize

@@ -262,11 +262,12 @@ class Base_uni_neural(object):
         
         self.save_dir.mkdir(parents=True, exist_ok=True)
         save_path = self.save_dir / file_path
-        torch.save(self.cost_func.state_dict(), str(save_path))
+        torch.save(self.cost_func, str(save_path))
         
     
     def load_value_net(self):
-        self.cost_func.load_state_dict(torch.load(str(self.load_dir)))
+        # self.cost_func.load_state_dict(torch.load(str(self.load_dir)))
+        self.cost_func = torch.load(str(self.load_dir))
         
         
     def rs_pred_cost(self, x, u_seq, target, t):

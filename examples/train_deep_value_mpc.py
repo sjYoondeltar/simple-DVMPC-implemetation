@@ -10,7 +10,7 @@ from vehicle_env.recorder import Recorder
 from common_utils import *
 
 
-def train_process(rsmpc, train_recorder):
+def train_process(rsmpc, train_recorder, params):
     
     reach_history = []
 
@@ -102,6 +102,7 @@ def train_process(rsmpc, train_recorder):
         pass
     
     train_recorder.save_logs(f"{datetime_str}.csv")
+    train_recorder.save_params(params, f"{datetime_str}.json")
 
 
 if __name__ == '__main__':
@@ -130,13 +131,14 @@ if __name__ == '__main__':
     
     train_recorder = Recorder(
         fieldnames=["episode", "x", "u", "r", "mask", "tc", "x_pred", "reach", "collision"],
-        save_dir=params["learning_process"]["save_dir"] / Path("logs")
+        save_log_dir=params["learning_process"]["save_dir"] / Path("logs"),
+        save_param_dir=params["learning_process"]["save_dir"] / Path("params")
     )
     
     env, train_episodes, obs_pts = set_env(params)
 
     rsmpc = set_ctrl(params, device, ENSEMBLE)
     
-    train_process(rsmpc, train_recorder)
+    train_process(rsmpc, train_recorder, params)
     
     

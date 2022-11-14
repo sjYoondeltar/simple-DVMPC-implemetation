@@ -24,12 +24,9 @@ def main(dir_path, model_weights):
     
     with torch.no_grad():
         
-        load_value_dict = torch.load(file_name)
-        input_dim = list(load_value_dict.values())[0].shape[1]
-        output_dim = list(load_value_dict.values())[-1].shape[0]
-        
-        value_net = EnsembleValueNet(input_dim, 256, output_dim)
-        value_net.load_state_dict(load_value_dict)
+        value_net = torch.load(file_name).cpu()
+        input_dim = list(value_net.state_dict().values())[0].shape[1]
+        output_dim = list(value_net.state_dict().values())[-1].shape[0]
         
         a, b = np.meshgrid(
             np.arange(params["x_min"], params["x_max"], params["x_resolution"]),
