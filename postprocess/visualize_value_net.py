@@ -24,7 +24,7 @@ def main(dir_path, model_weights):
     
     with torch.no_grad():
         
-        value_net = torch.load(file_name)
+        value_net = torch.load(file_name).cpu()
         input_dim = list(value_net.state_dict().values())[0].shape[1]
         
         a, b = np.meshgrid(
