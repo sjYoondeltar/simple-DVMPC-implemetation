@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 import pandas as pd
+import json
 
 class Recorder(object):
 
@@ -33,12 +34,13 @@ class Recorder(object):
         df = pd.DataFrame(self.episode_memory, columns=self.fieldnames)
         df.to_csv(str(self.save_dir / file_path), index=False)
         
-        # with open(str(self.save_dir / file_path), 'w') as f:
-        #     csv_writer = csv.DictWriter(f, fieldnames=self.fieldnames)
+    def save_params(self, params, file_path):
+        
+        with open(str(self.save_dir / file_path), "w") as json_file:
+
+            json.dump(params, json_file)
             
-        #     for rows in self.results_memory:
-        #         csv_writer.writerows(rows)
-                
+            
 
 if __name__ == '__main__':
     
