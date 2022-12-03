@@ -85,13 +85,6 @@ if __name__ == '__main__':
     
     reward_plot_draw = RewardPlotter(save_dir=Path("runs/comparison"))
     
-    # logs_list = [
-    #     "runs/value_net/cem_dense/logs/20221030_222322.csv",
-    #     # "runs/value_net/cem_sparse/logs/20221031_225509.csv",
-    #     "runs/ensemble_value_net/mppi_dense/logs/20221031_005341.csv",
-    #     # "runs/ensemble_value_net/mppi_sparse/logs/20221031_132405.csv"
-    # ]
-    
     if len(log_list) == 0:
         
         print("Please input log file path.")
