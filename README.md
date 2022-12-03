@@ -1,7 +1,7 @@
 
 # simple-DVMPC-implemetation
 
-This is an unofficial implementation of Deep Value Model Predictive Control (MPC) algorithm in the paper by F.Farshidian
+The implementation of Deep Value Model Predictive Control (DVMPC) based on the papers by F.Farshidian and N.Karnchanachari
 
 ## Algorithm
 
