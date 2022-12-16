@@ -251,7 +251,7 @@ class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
         return cost
     
         
-    def pred_ensemble_cost(self, states):
+    def calc_cost(self, states):
             
         self.cost_func.eval()
         
@@ -264,67 +264,7 @@ class MPPIMPC_uni_shered_redq(MPPIMPC_uni_neural):
         cost_conservative = mean_cost - self.beta_cost * std_cost
         
         return cost_conservative
-    
-        
-    def rs_pred_cost(self, x, u_seq, target, t):
 
-        self.x_predict[0, :, :] = np.tile(x, (1, self.K))
-
-        xt = np.tile(x, (1, self.K))
-        
-        tc = np.tile(t, (1, self.K))
-
-        cost_k = np.ones((self.K, ))
-        
-        for i, u in enumerate(u_seq.tolist()):
-
-            x_new = discrete_dynamics_uni(xt, np.array(u), self.dt)
-            tc = tc + self.dt
-
-            if x_new[2, 0] > np.pi:
-
-                x_new[2, 0] -= 2*np.pi
-            
-            elif x_new[2, 0] < -np.pi:
-            
-                x_new[2, 0] += 2*np.pi
-
-            else:
-
-                pass
-            
-            #calc cost
-            
-            if self.use_time:
-                cost_value_new = self.pred_ensemble_cost(torch.Tensor(np.concatenate([x_new[:2, :], tc]).T).float().to(self.device))
-                
-            else:
-                cost_value_new = self.pred_ensemble_cost(torch.Tensor(x_new[:2, :].T).float().to(self.device))
-
-            for k in range(self.K):
-                    
-                if self.coef_target_cost > 0.001:
-                    diff = target.squeeze() - x_new[:, k].squeeze()[:2]
-                    
-                    x_rel = diff[0]
-                    y_rel = diff[1]
-                    
-                    diff_angle = np.arctan2(y_rel, x_rel)
-                    
-                    r_target = -np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
-                    
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1)) + self.coef_target_cost * (self.cost_gamma**i+1)*r_target
-                    
-                else:
-                    
-                    cost_k[k] += -cost_value_new[k][0] * (self.cost_gamma**(i+1))
-
-            xt = x_new
-
-            self.x_predict[i+1, :, :] = xt
-
-        return cost_k
-    
     
     def train(self):
         
