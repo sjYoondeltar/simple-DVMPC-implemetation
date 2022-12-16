@@ -257,6 +257,13 @@ class Base_uni_neural(object):
 
             self.clip_u(i)
         
+        
+    def calc_cost(self, states):
+            
+        self.cost_func.eval()
+        
+        return self.cost_func(states)
+    
     
     def save_value_net(self, file_path):
         
@@ -266,7 +273,6 @@ class Base_uni_neural(object):
         
     
     def load_value_net(self):
-        # self.cost_func.load_state_dict(torch.load(str(self.load_dir)))
         self.cost_func = torch.load(str(self.load_dir))
         
         
@@ -305,10 +311,10 @@ class Base_uni_neural(object):
             #calc cost
             
             if self.use_time:
-                cost_value_new = self.cost_func(torch.Tensor(np.concatenate([x_new[:2, :], tc]).T).float().to(self.device))
+                cost_value_new = self.calc_cost(torch.Tensor(np.concatenate([x_new[:2, :], tc]).T).float().to(self.device))
                 
             else:
-                cost_value_new = self.cost_func(torch.Tensor(x_new[:2, :].T).float().to(self.device))
+                cost_value_new = self.calc_cost(torch.Tensor(x_new[:2, :].T).float().to(self.device))
 
             for k in range(self.K):
                     
@@ -317,8 +323,6 @@ class Base_uni_neural(object):
                     
                     x_rel = diff[0]
                     y_rel = diff[1]
-                    
-                    diff_angle = np.arctan2(y_rel, x_rel)
                     
                     r_target = -np.exp(-np.square(x_rel)/100-np.square(y_rel)/100)
                     
