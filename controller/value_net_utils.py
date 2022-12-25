@@ -163,7 +163,25 @@ class Base_uni_neural(object):
         
         self.save_dir = Path(params["learning_process"]["save_dir"])
         self.load_dir = load_dir
-
+    
+    
+    def build_value_net(self):
+        
+        if self.use_time:
+        
+            self.cost_func = ValueNet(self.x_dim, 256).to(self.device)
+            self.cost_func_target = ValueNet(self.x_dim, 256).to(self.device)
+            
+        else:
+        
+            self.cost_func = ValueNet(self.x_dim-1, 256).to(self.device)
+            self.cost_func_target = ValueNet(self.x_dim-1, 256).to(self.device)
+        
+        self.cost_func_target.load_state_dict(self.cost_func.state_dict())
+        
+        self.critic_optimizer = optim.Adam(
+            list(self.cost_func.parameters()), lr=self.lr, eps=1e-4)
+    
     
     def reset_mu_std(self):
 
@@ -341,4 +359,69 @@ class Base_uni_neural(object):
             self.x_predict[i+1, :, :] = xt
 
         return cost_k
+
+    
+    def train(self):
+        
+        if self.sample_enough:
+            
+            for _ in range(self.G):
+        
+                criterion = torch.nn.MSELoss()
+                
+                if self.n_step==1:
+                    
+                    mini_batch = self.buffer.sample(self.minibatch_size)
+                    
+                else:
+                
+                    mini_batch = self.buffer.main_buffer.sample(self.minibatch_size)
+                        
+                mini_batch = np.array(mini_batch, dtype=object)
+                states = torch.Tensor(np.vstack(mini_batch[:, 0]).reshape([self.minibatch_size, -1])).float().to(self.device)
+                actions = list(mini_batch[:, 1])
+                rewards = torch.Tensor(list(mini_batch[:, 2])).float().to(self.device)
+                next_states = torch.Tensor(np.vstack(mini_batch[:, 3]).reshape([self.minibatch_size, -1])).float().to(self.device)
+                masks = torch.Tensor(list(mini_batch[:, 4])).float().to(self.device)
+                
+                if self.use_time:
+                    
+                    ts = torch.Tensor(list(mini_batch[:, 5])).float().to(self.device).view([self.minibatch_size, 1])
+                    
+                else:
+                    
+                    pass
+                
+                self.cost_func.train()
+                self.cost_func_target.eval()
+                
+                if self.use_time:
+                    value_trainable = self.cost_func(torch.cat([states[:, :2], ts], 1))
+                    value_target = self.cost_func_target(torch.cat([next_states[:, :2], ts+self.dt], 1))
+                
+                else:
+                    value_trainable = self.cost_func(states[:, :2])
+                    value_target = self.cost_func_target(next_states[:, :2])
+                
+                
+                if self.n_step == 1:
+
+                    target = rewards.view([-1,1]) + masks.view([-1,1]) * self.gamma * value_target
+                
+                else:
+                    
+                    target = rewards.view([-1,1]) + masks.view([-1,1]) * (self.gamma**self.n_step) * value_target
+                    
+                loss = criterion(value_trainable, target.detach())
+                self.critic_optimizer.zero_grad()
+                loss.backward()
+                self.critic_optimizer.step()
+                        
+                self.soft_target_update(self.cost_func, self.cost_func_target)
+                
+            self.eps = np.maximum(self.eps*0.999, 0.001)
+        
+        else:
+            
+            pass
 
