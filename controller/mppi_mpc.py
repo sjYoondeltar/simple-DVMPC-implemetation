@@ -35,24 +35,6 @@ class MPPIMPC_uni_neural(Base_uni_neural):
         self.cost_lambda = 0.1
         
         
-    def build_value_net(self):
-        
-        if self.use_time:
-        
-            self.cost_func = ValueNet(self.x_dim, 256).to(self.device)
-            self.cost_func_target = ValueNet(self.x_dim, 256).to(self.device)
-            
-        else:
-        
-            self.cost_func = ValueNet(self.x_dim-1, 256).to(self.device)
-            self.cost_func_target = ValueNet(self.x_dim-1, 256).to(self.device)
-        
-        self.cost_func_target.load_state_dict(self.cost_func.state_dict())
-        
-        self.critic_optimizer = optim.Adam(
-            list(self.cost_func.parameters()), lr=self.lr, eps=1e-4)
-
-
     def clip_du(self, n_idx, du_seq=None):
         
         if du_seq is None:
