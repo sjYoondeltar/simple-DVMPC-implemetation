@@ -59,6 +59,9 @@ def main(dir_path, model_weights):
     cp_m = plt.contourf(a, b, mean_results)
 
     plt.colorbar(cp_m)
+    plt.xlabel('x(m)')
+    plt.ylabel('y(m)')
+    plt.title('Mean of the ensemble value')
     plt.gca().set_aspect('equal', adjustable='box')
     plt.draw()
     plt.savefig(str(save_folder / plot_mean_name))
@@ -68,6 +71,9 @@ def main(dir_path, model_weights):
     cp_s = plt.contourf(a, b, std_results)
 
     plt.colorbar(cp_s)
+    plt.xlabel('x(m)')
+    plt.ylabel('y(m)')
+    plt.title('Standard deviation of the ensemble value')
     plt.gca().set_aspect('equal', adjustable='box')
     plt.draw()
     plt.savefig(str(save_folder / plot_std_name))
